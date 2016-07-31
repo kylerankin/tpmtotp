@@ -65,8 +65,12 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
+#ifdef CONFIG_OPENSSL
 #include <openssl/rand.h>
 #include <openssl/sha.h>
+#else
+#include "mbedtls-compat.h"
+#endif
 
 #include "tpm.h"
 #include "tpmfunc.h"

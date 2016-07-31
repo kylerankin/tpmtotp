@@ -48,7 +48,13 @@
 #ifdef TPM_WINDOWS
 #include <winsock2.h>
 #endif
+
+#ifdef CONFIG_OPENSSL
 #include <openssl/aes.h>
+#else
+#include "mbedtls-compat.h"
+#endif
+
 #include <tpm.h>
 #include <tpmfunc.h>
 #include <tpmutil.h>
@@ -1215,12 +1221,17 @@ static uint32_t encWrappedCommand(struct tpm_buffer *tb,
 						       &aeskey,
 						       iv);
 			} else {
+#ifdef CONFIG_OPENSSL
 				AES_ofb128_encrypt(&tb ->buffer[enc_start],
 				                   &enc->buffer[enc_start],
 				                   enc_len,
 				                   &aeskey,
 				                   iv,
 				                   &num);
+#else
+				fprintf(stderr, "ofb not supported\n");
+				exit(-1);
+#endif
 			}
 		} else {
 			SET_TPM_BUFFER(enc,tb->buffer,tb->used);
@@ -1428,12 +1439,17 @@ static uint32_t decWrappedCommand(struct tpm_buffer *tb,
 						       &aeskey,
 						       iv);
 			} else {
+#ifdef CONFIG_OPENSSL
 				AES_ofb128_encrypt(&tb ->buffer[enc_start],
 				                   &res->buffer[plain],
 				                   enc_len,
 				                   &aeskey,
 				                   iv,
 				                   &num);
+#else
+				fprintf(stderr, "ofb not supported\n");
+				exit(-1);
+#endif
 			}
 		} else {
 			SET_TPM_BUFFER(res, &tb->buffer[offset], inner_len);

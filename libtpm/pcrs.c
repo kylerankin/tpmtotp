@@ -48,9 +48,15 @@
 #endif
 #include <tpm.h>
 #include <tpmutil.h>
+
+#ifdef CONFIG_OPENSSL
 #include <openssl/pem.h>
 #include <openssl/sha.h>
 #include <openssl/rsa.h>
+#else
+#include "mbedtls-compat.h"
+#endif
+
 #include <oiaposap.h>
 #include <hmac.h>
 #include <pcrs.h>
@@ -89,6 +95,7 @@ uint32_t TPM_ValidateSignature(uint16_t sigscheme,
 			}
 		break;
 		case TPM_SS_RSASSAPKCS1v15_DER:
+#ifdef CONFIG_OPENSSL
 			/* create the hash of the quoteinfo structure for signature verification */
 			TSS_sha1(data->buffer, data->used, sighash);
 
@@ -110,6 +117,10 @@ uint32_t TPM_ValidateSignature(uint16_t sigscheme,
 					ret = ERR_SIGNATURE;
 				}
 			}
+#else
+			fprintf(stderr, "%s:%s: Not supported\n", __FILE__, __LINE__);
+			exit(-1);
+#endif
 		break;
 		default:
 			ret = ERR_SIGNATURE;

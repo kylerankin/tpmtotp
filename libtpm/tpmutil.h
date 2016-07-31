@@ -42,7 +42,11 @@
 
 #include <stdint.h>
 
+#ifdef CONFIG_OPENSSL
 #include <openssl/aes.h>
+#else
+#include "mbedtls-compat.h"
+#endif
 
 #include <tpm_structures.h>
 

@@ -55,7 +55,11 @@
 #include <hmac.h>
 #include <oiaposap.h>
 
+#ifdef CONFIG_OPENSSL
 #include <openssl/aes.h>
+#else
+#include "mbedtls-compat.h"
+#endif
 
 void TPM_DetermineSessionEncryption(const session *sess, int *use_xor)
 {
@@ -154,6 +158,7 @@ uint32_t TSS_OIAPopen(uint32_t *handle, unsigned char *enonce)
 	memcpy(enonce,
 	       &tpmdata.buffer[TPM_DATA_OFFSET+TPM_U32_SIZE],
 	       TPM_NONCE_SIZE);
+
 	return 0;
 }
 
@@ -328,6 +333,7 @@ uint32_t TSS_Session_CreateTransport(session *sess,
                                      uint32_t transHandle,
                                      unsigned char *transNonce)
 {
+fprintf(stderr, "%s:%d\n", __func__, __LINE__);
 	sess->sess_type = SESSION_TRAN;
 	memcpy(sess->authdata, transAuth, TPM_AUTHDATA_SIZE);
 	sess->type.tran.handle = transHandle;
@@ -344,7 +350,6 @@ uint32_t TSS_SessionOpen(uint32_t allowed_type,
 	uint32_t have = SESSION_OIAP;
 
 	memcpy(sess->authdata, passHash, TPM_AUTHDATA_SIZE);
-
 	if (etype == TPM_ET_KEY || etype == TPM_ET_KEYHANDLE) {
 		needKeysRoom(evalue, 0,0, -1);
 	}

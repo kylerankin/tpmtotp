@@ -41,7 +41,12 @@
 #define TPMKEYS_H
 #include "tpm.h"
 #include "tpm_structures.h"
+
+#ifdef CONFIG_OPENSSL
 #include <openssl/rsa.h>
+#else
+#include "mbedtls-compat.h"
+#endif
 
 #ifndef TPM_MAXIMUM_KEY_SIZE
 #define TPM_MAXIMUM_KEY_SIZE  4096

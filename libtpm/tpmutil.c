@@ -57,9 +57,13 @@
 #include <winsock2.h>
 #endif
 
+#ifdef CONFIG_OPENSSL
 #include <openssl/rand.h>
 #include <openssl/sha.h>
 #include <openssl/aes.h>
+#else
+#include "mbedtls-compat.h"
+#endif
 
 #include "tpm.h"
 #include "tpmfunc.h"
@@ -1222,6 +1226,14 @@ static uint32_t TPM_Transmit_Internal(struct tpm_buffer *tb,const char *msg,
 
 uint32_t TPM_Transmit(struct tpm_buffer *tb,const char *msg)
 {
+    if(0)
+    {
+        fprintf(stderr, "-> %s (%d,%08x):", msg, tb->used, tb->flags);
+        for(uint32_t i = 0 ; i < tb->used ; i++)
+	    fprintf(stderr, " %02x", tb->buffer[i]);
+        fprintf(stderr, "\n");
+    }
+
     return TPM_Transmit_Internal(tb, msg, 1);
 }
 

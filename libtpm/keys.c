@@ -56,9 +56,13 @@
 #include <hmac.h>
 #include <newserialize.h>
 
+#ifdef CONFIG_OPENSSL
 #include <openssl/rsa.h>
 #include <openssl/sha.h>
 #include <openssl/bn.h>
+#else
+#include "mbedtls-compat.h"
+#endif
 
 
 /****************************************************************************/
@@ -1316,8 +1320,17 @@ RSA *TSS_convpubkey(pubkeydata *k)
                 exp);
    }
    /* set up the RSA public key structure */
+#ifdef CONFIG_OPENSSL
    rsa->n = mod;
    rsa->e = exp;
+#else
+   mbedtls_mpi_copy(&rsa->N, mod);
+   mbedtls_mpi_copy(&rsa->E, exp);
+   BN_free(mod);
+   BN_free(exp);
+
+   rsa->len = ( mbedtls_mpi_bitlen( &rsa->N ) + 7 ) >> 3;
+#endif
    return rsa;
    }
 

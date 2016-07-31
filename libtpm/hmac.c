@@ -39,6 +39,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #ifdef TPM_POSIX
 #include <netinet/in.h>
@@ -51,8 +52,12 @@
 #include <oiaposap.h>
 #include <hmac.h>
 
+#ifdef CONFIG_OPENSSL
 #include <openssl/sha.h>
 #include <openssl/hmac.h>
+#else
+#include "mbedtls-compat.h"
+#endif
 
 #define TPM_TAG_RSP_COMMAND       0x00C4
 #define TPM_TAG_RSP_AUTH1_COMMAND 0x00C5
@@ -118,8 +123,8 @@ uint32_t TSS_checkhmac1(const struct tpm_buffer *tb, uint32_t command, unsigned 
    continueflag = authdata - 1;
    enonce       = continueflag - TPM_NONCE_SIZE;
    SHA1_Init(&sha);
-   SHA1_Update(&sha,&result,4);
-   SHA1_Update(&sha,&ordinal,4);
+   SHA1_Update(&sha, (const void*) &result,4);
+   SHA1_Update(&sha, (const void*) &ordinal,4);
    va_start(argp,keylen);
    for (;;) {
       dlen = (unsigned int)va_arg(argp,unsigned int);

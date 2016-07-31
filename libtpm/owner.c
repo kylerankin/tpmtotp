@@ -53,11 +53,17 @@
 #include <tpm_constants.h>
 #include <oiaposap.h>
 #include <hmac.h>
+
+#ifdef CONFIG_OPENSSL
 #include <openssl/rsa.h>
 #include <openssl/bn.h>
 #include <openssl/crypto.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
+#else
+#include "mbedtls-compat.h"
+#endif
+
 
 /****************************************************************************/
 /*                                                                          */
@@ -147,6 +153,7 @@ uint32_t TPM_TakeOwnership(unsigned char *ownpass,
 		goto failexit;
 	}
 	
+#ifdef CONFIG_OPENSSL
 	/* Pad and then encrypt the owner data using the RSA public key */
 	iret = RSA_padding_add_PKCS1_OAEP(padded,RSA_size(pubkey),
 	                                  ownpass,TPM_HASH_SIZE,tpm_oaep_pad_str,sizeof tpm_oaep_pad_str);
@@ -160,6 +167,7 @@ uint32_t TPM_TakeOwnership(unsigned char *ownpass,
 		goto failexit;
 	}
 	oencdatasize = htonl(iret);
+
 	/* Pad and then encrypt the SRK data using the RSA public key */
 	iret = RSA_padding_add_PKCS1_OAEP(padded,RSA_size(pubkey),
 	                                 spass,TPM_HASH_SIZE,tpm_oaep_pad_str,sizeof tpm_oaep_pad_str);
@@ -174,6 +182,44 @@ uint32_t TPM_TakeOwnership(unsigned char *ownpass,
 		goto failexit;
 	}
 	sencdatasize = htonl(iret);
+#else
+	/* Pad and then encrypt the owner data using the RSA public key */
+	iret = mbedtls_rsa_rsaes_oaep_encrypt(
+		pubkey,
+		NULL,
+		NULL,
+		MBEDTLS_RSA_PUBLIC,
+		tpm_oaep_pad_str,
+		sizeof(tpm_oaep_pad_str),
+		TPM_HASH_SIZE,
+		ownpass,
+		ownerencr
+	);
+	if (iret != 0) {
+		ret = ERR_CRYPT_ERR;
+		goto failexit;
+	}
+	oencdatasize = pubkey->len;
+
+	/* Pad and then encrypt the SRK data using the RSA public key */
+	iret = mbedtls_rsa_rsaes_oaep_encrypt(
+		pubkey,
+		NULL,
+		NULL,
+		MBEDTLS_RSA_PUBLIC,
+		tpm_oaep_pad_str,
+		sizeof(tpm_oaep_pad_str),
+		TPM_HASH_SIZE,
+		spass,
+		srkencr
+	);
+	if (iret != 0) {
+		ret = ERR_CRYPT_ERR;
+		goto failexit;
+	}
+	sencdatasize = pubkey->len;
+#endif
+
 	RSA_free(pubkey);
 	pubkey = NULL;
 	if ((int)ntohl(oencdatasize) < 0) {

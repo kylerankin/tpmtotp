@@ -53,7 +53,12 @@
 #include <oiaposap.h>
 #include <tpmfunc.h>
 #include <hmac.h>
+
+#ifdef CONFIG_OPENSSL
 #include <openssl/rsa.h>
+#else
+#include <mbedtls/rsa.h>
+#endif
 
    
 /****************************************************************************/
@@ -215,15 +220,34 @@ uint32_t TSS_Bind(RSA *key,
 	if (key == NULL || data == NULL || blob == NULL) 
 		return ERR_NULL_ARG;
 
+#ifdef CONFIG_OPENSSL
 	ret = RSA_padding_add_PKCS1_OAEP(blob2,size,data->buffer,data->used,tcpa,4);
 	if (ret != 1) {
 		 free(blob2);
 		 return ERR_CRYPT_ERR;
 	}
 	ret = RSA_public_encrypt(size,blob2,blob->buffer,key,RSA_NO_PADDING);
+
 	free(blob2);
 	if ((int)ret == -1) 
 		 return ERR_CRYPT_ERR;
+#else
+	/* Pad and then encrypt the owner data using the RSA public key */
+	ret = mbedtls_rsa_rsaes_oaep_encrypt(
+		key,
+		NULL,
+		NULL,
+		MBEDTLS_RSA_PUBLIC,
+		tcpa,
+		4,
+		data->used,
+		data->buffer,
+		blob->buffer
+	);
+ 	free(blob2);
+	if (ret != 0)
+		 return ERR_CRYPT_ERR;
+#endif
 	blob->used = ret;
 	return 0;
 }
@@ -244,6 +268,7 @@ uint32_t TSS_BindPKCSv15(RSA *key,
 	if (key == NULL || data == NULL || blob == NULL) 
 		return ERR_NULL_ARG;
 
+#ifdef CONFIG_OPENSSL
 	ret = RSA_padding_add_PKCS1_type_2(blob2,size,data->buffer,data->used);
 	if (ret != 1) {
 		 free(blob2);
@@ -254,6 +279,22 @@ uint32_t TSS_BindPKCSv15(RSA *key,
 	if ((int)ret == -1) {
 		 return ERR_CRYPT_ERR;
 	}
+#else
+	/* Pad and then encrypt the owner data using the RSA public key */
+	ret = mbedtls_rsa_pkcs1_encrypt(
+		key,
+		NULL,
+		NULL,
+		MBEDTLS_RSA_PUBLIC,
+		data->used,
+		data->buffer,
+		blob->buffer
+	);
+ 	free(blob2);
+	if (ret != 0)
+		 return ERR_CRYPT_ERR;
+#endif
+
 	blob->used = ret;
 	return 0;
 }

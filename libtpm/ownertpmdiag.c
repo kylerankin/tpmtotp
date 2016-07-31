@@ -52,11 +52,16 @@
 #include <tpmkeys.h>
 #include <oiaposap.h>
 #include <hmac.h>
+
+#ifdef CONFIG_OPENSSL
 #include <openssl/rsa.h>
 #include <openssl/bn.h>
 #include <openssl/crypto.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
+#else
+#include "mbedtls-compat.h"
+#endif
 
 #define TPM_SRK_PARAM_BUFF_SIZE 256
 #define RSA_MODULUS_BYTE_SIZE 256
@@ -126,6 +131,7 @@ uint32_t TPM_TakeOwnership12(unsigned char *ownpass, unsigned char *srkpass, key
    if (pubkey == NULL) return ERR_CRYPT_ERR;
    memset(ownerencr,0,sizeof ownerencr);
    memset(srkencr,0,sizeof srkencr);
+#ifdef CONFIG_OPENSSL
    /* Pad and then encrypt the owner data using the RSA public key */
    iret = RSA_padding_add_PKCS1_OAEP(padded,RSA_MODULUS_BYTE_SIZE,
                                     ownpass,TPM_HASH_SIZE,tpm_oaep_pad_str,sizeof tpm_oaep_pad_str);
@@ -140,6 +146,38 @@ uint32_t TPM_TakeOwnership12(unsigned char *ownpass, unsigned char *srkpass, key
    iret = RSA_public_encrypt(RSA_MODULUS_BYTE_SIZE,padded,srkencr,pubkey,RSA_NO_PADDING);
    if (iret < 0) return ERR_CRYPT_ERR;
    sencdatasize = htonl(iret);
+#else
+	/* Pad and then encrypt the owner data using the RSA public key */
+	iret = mbedtls_rsa_rsaes_oaep_encrypt(
+		pubkey,
+		NULL,
+		NULL,
+		MBEDTLS_RSA_PUBLIC,
+		tpm_oaep_pad_str,
+		sizeof(tpm_oaep_pad_str),
+		TPM_HASH_SIZE,
+		ownpass,
+		ownerencr
+	);
+	if (iret != 0) return ERR_CRYPT_ERR;
+	oencdatasize = pubkey->len;
+
+	/* Pad and then encrypt the SRK data using the RSA public key */
+	iret = mbedtls_rsa_rsaes_oaep_encrypt(
+		pubkey,
+		NULL,
+		NULL,
+		MBEDTLS_RSA_PUBLIC,
+		tpm_oaep_pad_str,
+		sizeof(tpm_oaep_pad_str),
+		TPM_HASH_SIZE,
+		spass,
+		srkencr
+	);
+	if (iret != 0) return ERR_CRYPT_ERR;
+	sencdatasize = pubkey->len;
+#endif
+
    RSA_free(pubkey);
    if ((int)ntohl(oencdatasize) < 0) return ERR_CRYPT_ERR;
    if ((int)ntohl(sencdatasize) < 0) return ERR_CRYPT_ERR;

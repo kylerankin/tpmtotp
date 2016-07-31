@@ -67,8 +67,12 @@
 #include <termios.h>
 #endif
 
+#ifdef CONFIG_OPENSSL
 #include <openssl/rand.h>
 #include <openssl/sha.h>
+#else
+#include "mbedtls-compat.h"
+#endif
 
 #include "tpm.h"
 #include "tpmfunc.h"
