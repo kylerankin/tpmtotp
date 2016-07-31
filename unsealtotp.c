@@ -17,10 +17,10 @@
 #include <unistd.h>
 #include <getopt.h>
 #include "tpmfunc.h"
-#include <liboath/oath.h>
+#include "oath.h"
 
 #define keylen 20
-char key[keylen];
+uint8_t key[keylen];
 const char efivarfs[] = "/sys/firmware/efi/efivars/";
 
 int main(int argc, char *argv[])
@@ -90,10 +90,15 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	ret = oath_totp_generate(key, keylen, time(NULL), 30, 0, 6, totp);
-	if (ret != 0) {
-		fprintf(stderr, "Error generating totp value\n");
-		return -1;
+	if (0)
+	{
+		printf("Decrypted secret:");
+		for(int i = 0 ; i < outlen ; i++)
+			printf(" %02x", key[i]);
+		printf("\n");
 	}
-	printf("%s\n", totp);
+
+	uint32_t token = oauth_calc(time(NULL), key, keylen); //, time(NULL), 30, 0, 6, totp);
+
+	printf("%06d\n", token);
 }
