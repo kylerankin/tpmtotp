@@ -17,14 +17,22 @@
  *      (at your option) any later version.
  */
 
+#undef CONFIG_TSS // don't use the large tspi library
+
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <getopt.h>
 #include <qrencode.h>
+#ifdef CONFIG_TSS
 #include <tss/tspi.h>
+#else
+#include "tpmfunc.h"
+#include "tpm_error.h"
+#endif
 #include "base32.h"
 
 #define keylen 20
@@ -101,8 +109,8 @@ unsigned int parse_pcrs(char *optarg)
 				char *tmp = malloc(2*LEN*sizeof(uint8_t));
 				CHECK_MALLOC(tmp);
 
-				int i = 0;
-				int j = 0;
+				size_t i = 0;
+				size_t j = 0;
 
 				for (i = 0; i < strlen(val); i++) {
 					if (val[i] != ' ')
@@ -139,6 +147,8 @@ static void writeANSI_margin(FILE* fp, int realwidth,
 			     char* buffer, int buffer_s,
 			     char* white, int white_s )
 {
+	(void) buffer_s;
+
 	int y;
 
 	strncpy(buffer, white, white_s);
@@ -186,7 +196,7 @@ static int writeANSI(QRcode *qrcode)
 	for(y=0; y<qrcode->width; y++) {
 		row = (p+(y*qrcode->width));
 
-		bzero( buffer, buffer_s );
+		memset( buffer, 0, buffer_s );
 		strncpy( buffer, white, white_s );
 		for(x=0; x<margin; x++ ){
 			strncat( buffer, "  ", 2 );
@@ -242,12 +252,14 @@ int generate_key() {
 	return 0;
 }
 
+#ifdef CONFIG_TSS
 int TSPI_SealCurrPCR(TSS_HCONTEXT c, uint32_t keyhandle, uint32_t pcrmap,
 			 unsigned char *keyauth,
 			 unsigned char *dataauth,
 			 unsigned char *data, unsigned int datalen,
 			 unsigned char *blob, unsigned int *bloblen)
 {
+
 #define CHECK_ERROR(r,m) if (r != TSS_SUCCESS) { fprintf(stderr, m ": 0x%08x\n", r); return -1;}
 
 	TSS_RESULT r = 0;
@@ -339,6 +351,7 @@ int TSPI_SealCurrPCR(TSS_HCONTEXT c, uint32_t keyhandle, uint32_t pcrmap,
 
 	return (r == 0)? 0 : -1;
 }
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -350,12 +363,15 @@ int main(int argc, char *argv[])
 	unsigned char wellknown[20] = {0};
 	unsigned char totpstring[64];
 	uint32_t pcrmask =  0x000003BF; // PCRs 0-5 and 7-9
+	const char * hostname = "TPMTOTP";
 
 	char *outfile_name;
 	FILE *infile;
 	FILE *outfile;
 	QRcode *qrcode;
+#ifdef CONFIG_TSS
 	TSS_HCONTEXT context;
+#endif
 
 	if (generate_key()) {
 		return -1;
@@ -394,7 +410,7 @@ int main(int argc, char *argv[])
 
 		case 'p':
 			pcrmask = parse_pcrs(optarg);
-			if (pcrmask == -1)
+			if (pcrmask == (uint32_t) -1)
 				return -1;
 			break;
 
@@ -437,6 +453,7 @@ int main(int argc, char *argv[])
 	base32_encode(key, keylen, base32_key);
 	base32_key[BASE32_LEN(keylen)] = NULL;
 
+#ifdef CONFIG_TSS
 	ret = Tspi_Context_Create(&context);
 	if (ret != TSS_SUCCESS) {
 		fprintf(stderr, "Unable to create TPM context\n");
@@ -454,18 +471,29 @@ int main(int argc, char *argv[])
 			      wellknown,  // Well-known SEAL secret
 			      key, keylen,	/* data to be sealed */
 			      blob, &bloblen);	/* buffer to receive result */
+#else
+	ret = TPM_SealCurrPCR(
+			      0x40000000, // SRK
+			      pcrmask,
+			      wellknown,  // Well-known SRK secret
+			      wellknown,  // Well-known SEAL secret
+			      key, keylen,	/* data to be sealed */
+			      blob, &bloblen);	/* buffer to receive result */
+#endif
 	if (ret != 0) {
 		fprintf(stderr, "Error %s from TPM_Seal\n",
 			TPM_GetErrMsg(ret));
-		goto out;
+		//goto out;
 	}
 
-	sprintf(totpstring, "otpauth://totp/TPMTOTP?secret=%s", base32_key);
+	sprintf(totpstring, "otpauth://totp/%s?secret=%s", hostname, base32_key);
+	//sprintf(totpstring, "%s", base32_key);
 
 	if (base32_flag) {
 		printf("%s\n", base32_key);
 	}
 
+	printf("%s\n", totpstring);
 	if (qr_flag) {
 		qrcode = QRcode_encodeString(totpstring, 0, QR_ECLEVEL_L,
 					     QR_MODE_8, 1);
@@ -473,6 +501,9 @@ int main(int argc, char *argv[])
 	}
 
 	if (nvram_flag) {
+		uint32_t nvindex = 0x10004d47;
+		uint32_t permissions = TPM_NV_PER_OWNERREAD|TPM_NV_PER_OWNERWRITE;
+#ifdef CONFIG_TSS
 		TSS_HNVSTORE nvObject;
 		TSS_FLAG nvattrs = 0;
 
@@ -484,14 +515,14 @@ int main(int argc, char *argv[])
 			goto out;
 		}
 		ret = Tspi_SetAttribUint32(nvObject, TSS_TSPATTRIB_NV_INDEX, 0,
-					   0x10004d47);
+					   nvindex);
 		if (ret != TSS_SUCCESS) {
 			fprintf(stderr, "Unable to set index\n");
 			goto out;
 		}
 		ret = Tspi_SetAttribUint32(nvObject,
 					   TSS_TSPATTRIB_NV_PERMISSIONS, 0,
-				   TPM_NV_PER_OWNERREAD|TPM_NV_PER_OWNERWRITE);
+				   permissions);
 		if (ret != TSS_SUCCESS) {
 			fprintf(stderr, "Unable to set permissions\n");
 			goto out;
@@ -512,6 +543,38 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Unable to write to nvram\n");
 			goto out;
 		}
+#else
+		unsigned char * ownauth = wellknown;
+		unsigned char * areaauth = wellknown;
+		TPM_PCR_INFO_SHORT *pcrInfoRead = NULL;
+		TPM_PCR_INFO_SHORT *pcrInfoWrite = NULL;
+
+		ret = TPM_NV_DefineSpace2(
+			ownauth,
+			nvindex,
+			bloblen,
+			permissions,
+			areaauth,
+			pcrInfoRead,
+			pcrInfoWrite);
+		//if (ret != TPM_SUCCESS && ret != (0x3000 | TSS_E_NV_AREA_EXIST)) {
+		if (ret != TPM_SUCCESS) {
+			fprintf(stderr, "Unable to define space: %x\n", ret);
+			goto out;
+		}
+
+		ret = TPM_NV_WriteValue(
+			nvindex,
+			0,
+			blob,
+			bloblen,
+			ownauth
+		);
+		if (ret != TPM_SUCCESS) {
+			fprintf(stderr, "Unable to write to nvram\n");
+			goto out;
+		}
+#endif
 	} else {
 		outfile = fopen(outfile_name, "w");
 		if (outfile == NULL) {
@@ -537,8 +600,11 @@ int main(int argc, char *argv[])
 	}
 
 out:
+
+#ifdef CONFIG_TSS
 	Tspi_Context_FreeMemory(context, NULL);
 	Tspi_Context_Close(context);
+#endif
 
 	exit(ret);
 }
