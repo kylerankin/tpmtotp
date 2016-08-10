@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wchar.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -28,24 +29,30 @@
 
 static const int margin = 1;
 
-static void
-writeANSI_margin(
-	FILE * fp,
-	int realwidth,
-	char* buffer,
-	size_t buffer_s,
-	const char* white,
-	size_t white_s
-)
+static const char * utf8(int cp)
 {
-	(void) buffer_s;
+	static unsigned char buf[4];
 
-	strncpy(buffer, white, white_s);
-	memset(buffer + white_s, ' ', realwidth * 2);
-	strcpy(buffer + white_s + realwidth * 2, "\033[0m\n"); // reset to default colors
-	for(int y=0; y<margin; y++ ){
-		fputs(buffer, fp);
-	}
+	buf[0] = 0xE0 | ((cp >> 12) & 0x0F);
+	buf[1] = 0x80 | ((cp >>  6) & 0x3F);
+	buf[2] = 0x80 | ((cp >>  0) & 0x3F);
+	buf[3] = '\0';
+
+	return (const char*) buf;
+}
+
+
+static const char * block(int cp)
+{
+	if (cp == 0)
+		return utf8(0x2588);
+	if (cp == 1)
+		return utf8(0x2580);
+	if (cp == 2)
+		return utf8(0x2584);
+	if (cp == 3)
+		return " ";
+	return "--?";
 }
 
 
@@ -64,7 +71,7 @@ writeANSI(
 
 	const size_t realwidth = (qrcode->width + margin * 2) * size;
 	const size_t buffer_s = ( realwidth * white_s ) * 2;
-	char * const buffer = malloc( buffer_s );
+	wchar_t buffer[qrcode->width + margin*2 + 4];
 
 	if(buffer == NULL) {
 		fprintf(stderr, "Failed to allocate memory.\n");
@@ -72,51 +79,57 @@ writeANSI(
 	}
 
 	/* top margin */
-	writeANSI_margin(fp, realwidth, buffer, buffer_s, white, white_s);
+	//writeANSI_margin(fp, realwidth, buffer, buffer_s, white, white_s);
 
 	/* raw data */
 	const unsigned char * const p = qrcode->data;
 
-	for(int y=0; y<qrcode->width; y++) {
-		const unsigned char * const row = p + y*qrcode->width;
+#if 0
+		219,
+		220,
+		223,
+		' ',
+#endif
 
-		memset( buffer, 0, buffer_s );
-		strncpy( buffer, white, white_s );
-		for(int x=0; x<margin; x++ ){
-			strncat( buffer, "  ", 2 );
-		}
+	
+	for(int y=0 ; y < margin ; y++)
+	{
+		for(int x=0; x<qrcode->width + 4 * margin; x++)
+			fputs(block(0), fp);
+		fputs("\n", fp);
+	}
+
+	for(int y=0; y < qrcode->width; y += 2) {
+		const unsigned char * const row0 = p + (y+0)*qrcode->width;
+		const unsigned char * const row1 = p + (y+1)*qrcode->width;
+
+		int offset = 0;
+
+		for(int x=0; x < margin*2; x++ )
+			fputs(block(0), fp);
 
 		int last = 0;
 
-		for(int x=0; x<qrcode->width; x++) {
-			if(row[x] & 0x1) {
-				if( last != 1 ){
-					strncat( buffer, black, black_s );
-					last = 1;
-				}
-			} else {
-				if( last != 0 ){
-					strncat( buffer, white, white_s );
-					last = 0;
-				}
-			}
-			strncat( buffer, "  ", 2 );
+		for(int x=0; x < qrcode->width; x++) {
+			int r0 = row0[x] & 0x1;
+			int r1 = y < qrcode->width-1 ? row1[x] & 0x1 : 0;
+
+			fputs(block(r0 << 1 | r1 << 0), fp);
 		}
 
-		if( last != 0 ){
-			strncat( buffer, white, white_s );
-		}
-		for(int x=0; x<margin; x++ ){
-			strncat( buffer, "  ", 2 );
-		}
-		strncat( buffer, "\033[0m\n", 5 );
-		fputs( buffer, fp );
+		for(int x=0; x<margin*2; x++ )
+			fputs(block(0), fp);
+
+		fputs("\n", fp);
 	}
 
-	/* bottom margin */
-	writeANSI_margin(fp, realwidth, buffer, buffer_s, white, white_s);
-
-	free(buffer);
+	/* bottom margin; only do a half block on the last one */
+	for(int y=0 ; y < margin ; y++)
+	{
+		for(int x=0; x<qrcode->width + 4 * margin; x++)
+			fputs(block(1), fp);
+		fputs("\n", fp);
+	}
 
 	return 0;
 }
