@@ -3,6 +3,10 @@
 This is a small collection of tools for allowing "remote attestation" between
 a computer and a phone via TOTP.
 
+NOTE: This version works with Heads using mbedtls inplace of OpenSSL
+and needs cleanup before it can be merged back into the mjg59/tpmtotp branch.
+Additionally, the NVRAM support does not work.
+
 ## sealtotp
 
 Generates a TOTP token, seals it against the TPM using the state of PCRs 0-5
