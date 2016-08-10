@@ -26,7 +26,7 @@ LDLIBS=-Llibtpm -ltpm ../mbedtls-2.3.0/library/libmbedcrypto.a -ldl
 
 PLYMOUTH_LDLIBS = `pkg-config --libs ply-boot-client`
 
-APPS=sealtotp unsealtotp
+APPS=sealtotp unsealtotp qrenc
 
 all: libtpm/libtpm.a $(APPS)
 
@@ -37,6 +37,15 @@ unsealtotp: unsealtotp.o oath.o
 
 plymouth-unsealtotp: plymouth-unsealtotp.c
 	$(CC) $(CFLAGS) $(PLYMOUTH_CFLAGS) -o $@ $< $(PLYMOUTH_LDLIBS) $(LDLIBS)
+
+qrenc: qrenc.c
+	$(CC) \
+		$(CFLAGS) \
+		-I../qrencode-3.4.4 \
+		-o $@ \
+		$^ \
+		../qrencode-3.4.4/.libs/libqrencode.so \
+		$(LDLIBS)
 
 sealtotp: sealtotp.c base32.c
 	$(CC) \
