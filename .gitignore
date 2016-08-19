@@ -2,3 +2,9 @@
 .*.d
 tags
 *.a
+*.so
+.config
+.configured
+.canary
+.*.swp
+.*.swo
