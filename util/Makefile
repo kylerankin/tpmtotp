@@ -11,6 +11,7 @@ PROGS += \
 	physicalpresence \
 	physicalsetdeactivated \
 	getcapability \
+	clearown \
 
 NOPROGS += \
 	pcrread \
@@ -21,7 +22,6 @@ NOPROGS += \
 	certifyselftest \
 	chgauth \
 	chgtpmauth \
-	clearown \
 	cmk_approvema \
 	cmk_createticket \
 	cmk_loadmigrationblob \
