@@ -1,5 +1,6 @@
 CFLAGS = \
 	-Werror=implicit-function-declaration \
+	-fPIC \
 	-Wall \
 	-O3 \
 	-Wp,-MMD,$(dir $@).$(notdir $@).d \
@@ -14,7 +15,7 @@ CFLAGS = \
 	-I. \
 	-I../../mbedtls-2.3.0/include \
 
-LIBRARY = libtpm.a
+LIBRARY = libtpm.so
 
 HEADERS = tpmfunc.h tpm.h tpmkeys.h
 
@@ -68,7 +69,7 @@ OBJECTS = $(SOURCES:.c=.o)
 
 $(LIBRARY): $(OBJECTS)
 	@-$(RM) "$@"
-	$(AR) -rcs "$@" $^
+	$(CC) -shared -o "$@" $^
 
 clean:
 	$(RM) -f *.o *.a
