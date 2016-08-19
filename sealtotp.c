@@ -501,7 +501,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (nvram_flag) {
-		uint32_t nvindex = 0x10004d47;
+		uint32_t nvindex = 0x00004d47;
 		uint32_t permissions = TPM_NV_PER_OWNERREAD|TPM_NV_PER_OWNERWRITE;
 #ifdef CONFIG_TSS
 		TSS_HNVSTORE nvObject;

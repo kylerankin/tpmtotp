@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 	char totp[7];
 	parhandle = 0x40000000;
 
-	ret = TPM_NV_ReadValue(0x10004d47, 0, 322, blob, &bloblen, NULL);
+	ret = TPM_NV_ReadValue(0x00004d47, 0, 322, blob, &bloblen, NULL);
 	if (ret) {
 		for (i=1; i<argc; i++) {
 			fd = open(argv[1], O_RDONLY);
