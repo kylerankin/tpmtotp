@@ -2,6 +2,9 @@
 #ifndef _mbedtls_compat_h_
 #define _mbedtls_compat_h_
 
+#include <stdlib.h>
+
+
 //--------------------------------------------------
 
 #include <mbedtls/sha1.h>
@@ -49,6 +52,8 @@ HMAC_Init(HMAC_CTX *ctx, const void * key, int key_len, const char *hash_name)
 static inline int
 RAND_bytes(void * buf_ptr, size_t len)
 {
+	extern long int random(void);
+	fprintf(stderr, "generating %zu bad random bytes\n", len);
 	uint8_t * buf = buf_ptr;
 	for(size_t i = 0 ; i < len ; i++)
 		buf[i] = (random() >> 16) & 0xFF;
@@ -59,9 +64,17 @@ RAND_bytes(void * buf_ptr, size_t len)
 
 #include <mbedtls/aes.h>
 
+#define AES_BLOCK_SIZE 16
 #define AES_KEY mbedtls_aes_context
+#define AES_DECRYPT MBEDTLS_AES_DECRYPT
+#define AES_ENCRYPT MBEDTLS_AES_ENCRYPT
 
 #define AES_set_encrypt_key(key,len,ctx) mbedtls_aes_setkey_enc(ctx,key,len)
+#define AES_set_decrypt_key(key,len,ctx) mbedtls_aes_setkey_dec(ctx,key,len)
+
+#define AES_cbc_encrypt(in, out, len, key, ivec, dir) \
+	mbedtls_aes_crypt_cbc(key, dir, len, ivec, in, out)
+
 #define AES_encrypt mbedtls_aes_encrypt
 
 //--------------------------------------------------
@@ -142,6 +155,25 @@ static inline void BN_free(BIGNUM * n)
 }
 
 #define BN_bin2bn(ptr,len,bn) mbedtls_mpi_read_binary(bn, ptr, len)
+
+
+//--------------------------------------------------
+
+#include <mbedtls/x509_crt.h>
+typedef mbedtls_x509_crt X509;
+
+static inline X509 * d2i_x509(X509 **x509_ptr, const unsigned char **in, int len)
+{
+	X509 * const x509 = x509_ptr ? *x509_ptr : calloc(1, sizeof(*x509));
+	int rc = mbedtls_x509_crt_parse_der(x509, *in, len);
+	if (rc != 0)
+		return NULL;
+	if (x509_ptr)
+		*x509_ptr = x509;
+	return x509;
+}
+
+#define X509_free free
 
 
 #endif // _mbedtls-compat_h_
