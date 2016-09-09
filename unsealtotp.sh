@@ -18,5 +18,9 @@ unsealfile  \
 	-of /tmp/secret \
 || die "Unable to unseal totp secret"
 
+rm /tmp/sealed
+
 totp < /tmp/secret \
 || die "Unable to compute TOTP hash"
+
+rm /tmp/secret

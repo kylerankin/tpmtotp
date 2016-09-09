@@ -15,6 +15,8 @@ warn() {
 dd if=/dev/urandom of=/tmp/secret bs=1 count=20 \
 || die "Unable to generate 20 random bytes"
 
+secret="`base32 < /tmp/secret`"
+
 # Use the current values of the PCRs, which will be read
 # from the TPM as part of the sealing ("X").
 sealfile2 \
@@ -28,12 +30,14 @@ sealfile2 \
 	-ix 4 X \
 || die "Unable to seal secret"
 
+rm /tmp/secret
+
 # to create an nvram space we need the TPM owner password
 # and the TPM physical presence must be asserted.
 #
 # The permissions are 0 since there is nothing special
 # about the sealed file
-setphysicalpresence -s \
+physicalpresence -s \
 || warn "Warning: Unable to assert physical presence"
 
 nv_definespace \
@@ -49,7 +53,7 @@ nv_writevalue \
 	-if /tmp/sealed \
 || die "Unable to write sealed secret to NVRAM"
 
-secret="`base32 < /tmp/secret`"
+rm /tmp/sealed
 
 url="otpauth://totp/TPMTOTP?secret=$secret"
 
