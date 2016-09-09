@@ -2,8 +2,11 @@
 #ifndef _mbedtls_compat_h_
 #define _mbedtls_compat_h_
 
+#include <unistd.h>
 #include <stdlib.h>
-
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 //--------------------------------------------------
 
@@ -46,17 +49,31 @@ HMAC_Init(HMAC_CTX *ctx, const void * key, int key_len, const char *hash_name)
 #define HMAC_cleanup mbedtls_md_free
 
 
-/** XXX DANGER! DANGER!
- * This should be replaced with something proper.
+/**
+ * Read bytes from /dev/urandom, might be slow.
  */
 static inline int
 RAND_bytes(void * buf_ptr, size_t len)
 {
-	extern long int random(void);
-	fprintf(stderr, "generating %zu bad random bytes\n", len);
+	int fd = open("/dev/urandom", O_RDONLY);
+	if (fd < 0)
+		return 0;
+
 	uint8_t * buf = buf_ptr;
-	for(size_t i = 0 ; i < len ; i++)
-		buf[i] = (random() >> 16) & 0xFF;
+	size_t offset = 0;
+
+	while(offset < len)
+	{
+		ssize_t rc = read(fd, buf + offset, len - offset);
+		if (rc <= 0)
+		{
+			close(fd);
+			return 0;
+		}
+		offset += rc;
+	}
+
+	close(fd);
 	return 1;
 }
 
