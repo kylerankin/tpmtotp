@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 	unsigned char output[base32_len+1];
 	base32_encode(blob, offset, output);
 
-	output[base32_len-1] = '\0';
+	output[base32_len] = '\0';
 	printf("%s", output);
 
 	return 0;
