@@ -208,30 +208,41 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	    hash_str = argv[i];
-	    if (40 != strlen(hash_str)) {
-		printf("The hash must be exactly 40 characters long!\n");
-		exit(-1);
-	    }
-	    memset(future_hash, 0x0, TPM_HASH_SIZE);
-	    shift = 4;
-	    j = 0;
-	    while (j < (2 * TPM_HASH_SIZE)) {
-		unsigned char c = hash_str[j];
-   	        
-		if (c >= '0' && c <= '9') {
-		    future_hash[j>>1] |= ((c - '0') << shift);
-		} else
-		    if (c >= 'a' && c <= 'f') {
-			future_hash[j>>1] |= ((c - 'a' + 10) << shift);
-		    } else
-			if (c >= 'A' && c <= 'F') {
-			    future_hash[j>>1] |= ((c - 'A' + 10) << shift);
-			} else {
-			    printf("Hash contains non-hex character!\n");
-			    exit(-1);
-			}
-		shift ^= 4;
-		j++;
+	    if (strcmp(hash_str, "X") == 0)
+	    {
+		// use the current value of the PCR
+		ret = TPM_PcrRead(index, future_hash);
+                if (ret != 0)
+                {
+                    printf("error reading PCR %d: %s\n", index, TPM_GetErrMsg(ret));
+                    exit(-1);
+                }
+            } else {
+		    if (40 != strlen(hash_str)) {
+			printf("The hash must be exactly 40 characters long!\n");
+			exit(-1);
+		    }
+		    memset(future_hash, 0x0, TPM_HASH_SIZE);
+		    shift = 4;
+		    j = 0;
+		    while (j < (2 * TPM_HASH_SIZE)) {
+			unsigned char c = hash_str[j];
+			
+			if (c >= '0' && c <= '9') {
+			    future_hash[j>>1] |= ((c - '0') << shift);
+			} else
+			    if (c >= 'a' && c <= 'f') {
+				future_hash[j>>1] |= ((c - 'a' + 10) << shift);
+			    } else
+				if (c >= 'A' && c <= 'F') {
+				    future_hash[j>>1] |= ((c - 'A' + 10) << shift);
+				} else {
+				    printf("Hash contains non-hex character!\n");
+				    exit(-1);
+				}
+			shift ^= 4;
+			j++;
+		    }
 	    }
 	    /*
 	     * Now build the pcrInfo
