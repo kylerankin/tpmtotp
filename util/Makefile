@@ -12,6 +12,12 @@ PROGS += \
 	physicalsetdeactivated \
 	getcapability \
 	clearown \
+	counter_create \
+	counter_increment \
+	counter_read \
+	counter_release \
+	sealfile2 \
+	unsealfile \
 
 NOPROGS += \
 	pcrread \
@@ -27,10 +33,6 @@ NOPROGS += \
 	cmk_loadmigrationblob \
 	cmk_setrestrictions \
 	counter_calc_incr \
-	counter_create \
-	counter_increment \
-	counter_read \
-	counter_release \
 	createek \
 	createkeydelegation \
 	createownerdelegation \
@@ -100,7 +102,6 @@ NOPROGS += \
 	savekeycontext \
 	savestate \
 	sealfile \
-	sealfile2 \
 	sealxfile \
 	selftest \
 	session \
@@ -121,7 +122,6 @@ NOPROGS += \
 	tpmreset \
 	transport_test \
 	unbindfile \
-	unsealfile \
 	unsealxfile \
 	updateverification \
 	verifydelegation \
