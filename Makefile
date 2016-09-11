@@ -26,7 +26,7 @@ LDLIBS=-Llibtpm -ltpm -L../mbedtls-2.3.0/library/ -lmbedcrypto -ldl
 
 PLYMOUTH_LDLIBS = `pkg-config --libs ply-boot-client`
 
-APPS=sealtotp unsealtotp qrenc totp base32
+APPS=qrenc totp base32
 
 all: libtpm/libtpm.a $(APPS) extra
 
