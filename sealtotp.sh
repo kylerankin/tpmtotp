@@ -19,6 +19,7 @@ secret="`base32 < /tmp/secret`"
 
 # Use the current values of the PCRs, which will be read
 # from the TPM as part of the sealing ("X").
+# should this read the storage root key?
 sealfile2 \
 	-if /tmp/secret \
 	-of /tmp/sealed \
@@ -41,6 +42,7 @@ physicalpresence -s \
 || warn "Warning: Unable to assert physical presence"
 
 read -s -p "TPM Owner password: " tpm_password
+echo
 
 nv_definespace \
 	-in 4d47 \
