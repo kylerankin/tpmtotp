@@ -18,6 +18,8 @@ PROGS += \
 	counter_release \
 	sealfile2 \
 	unsealfile \
+	forceclear \
+	takeown \
 
 NOPROGS += \
 	pcrread \

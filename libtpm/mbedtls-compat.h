@@ -109,7 +109,7 @@ static inline RSA *
 RSA_new(void)
 {
 	RSA * rsa = calloc(1, sizeof(*rsa));
-	mbedtls_rsa_init(rsa, MBEDTLS_RSA_PKCS_V21, MBEDTLS_RSA_PKCS_V21);
+	mbedtls_rsa_init(rsa, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA1);
 	return rsa;
 }
 

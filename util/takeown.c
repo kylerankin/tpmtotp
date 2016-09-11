@@ -40,9 +40,13 @@
 #include <stdio.h>
 #include <string.h>
 #include "tpmfunc.h"
+#ifdef CONFIG_USE_OPENSSL
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 #include <openssl/evp.h>
+#else
+#include "mbedtls-compat.h"
+#endif
 
 static void printUsage(void)
 {
@@ -59,9 +63,11 @@ int main(int argc, char *argv[])
 	unsigned char ownerAuth[20];
 	unsigned char pass2hash[20];
 	keydata srk;
+#ifdef CONFIG_USE_OPENSSL
 	RSA *rsa = NULL;       	/* OpenSSL format Public Key */
 	FILE *keyfile;    	/* output file for public key */
 	EVP_PKEY *pkey = NULL;  /* OpenSSL public key */
+#endif
 	int keylen = 2048;
 	int i;
 
@@ -310,6 +316,8 @@ int main(int argc, char *argv[])
 		exit(-1);
 	    }
 	}
+
+#ifdef CONFIG_USE_OPENSSL
 	/*
 	** convert the returned public key to OpenSSL format and
 	** export it to a file
@@ -342,5 +350,9 @@ int main(int argc, char *argv[])
 	}
 	fclose(keyfile);
 	EVP_PKEY_free(pkey);
+#else
+	printf("Warning: srk.pem is not supported\n");
+#endif
+
 	exit(0);
 }

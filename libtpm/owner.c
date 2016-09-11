@@ -65,6 +65,13 @@
 #endif
 
 
+static int wrap_rand_bytes(void * unused, unsigned char * buf, size_t len)
+{
+	(void) unused;
+	RAND_bytes(buf, len);
+	return 0;
+}
+
 /****************************************************************************/
 /*                                                                          */
 /*  Take Ownership of the TPM                                               */
@@ -186,7 +193,7 @@ uint32_t TPM_TakeOwnership(unsigned char *ownpass,
 	/* Pad and then encrypt the owner data using the RSA public key */
 	iret = mbedtls_rsa_rsaes_oaep_encrypt(
 		pubkey,
-		NULL,
+		wrap_rand_bytes,
 		NULL,
 		MBEDTLS_RSA_PUBLIC,
 		tpm_oaep_pad_str,
@@ -199,12 +206,12 @@ uint32_t TPM_TakeOwnership(unsigned char *ownpass,
 		ret = ERR_CRYPT_ERR;
 		goto failexit;
 	}
-	oencdatasize = pubkey->len;
+	oencdatasize = htonl(pubkey->len);
 
 	/* Pad and then encrypt the SRK data using the RSA public key */
 	iret = mbedtls_rsa_rsaes_oaep_encrypt(
 		pubkey,
-		NULL,
+		wrap_rand_bytes,
 		NULL,
 		MBEDTLS_RSA_PUBLIC,
 		tpm_oaep_pad_str,
@@ -217,7 +224,7 @@ uint32_t TPM_TakeOwnership(unsigned char *ownpass,
 		ret = ERR_CRYPT_ERR;
 		goto failexit;
 	}
-	sencdatasize = pubkey->len;
+	sencdatasize = htonl(pubkey->len);
 #endif
 
 	RSA_free(pubkey);
