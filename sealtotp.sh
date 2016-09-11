@@ -40,12 +40,14 @@ rm /tmp/secret
 physicalpresence -s \
 || warn "Warning: Unable to assert physical presence"
 
+read -s -p "TPM Owner password: " tpm_password
+
 nv_definespace \
 	-in 4d47 \
 	-sz 312 \
-	-pwdo abcd@1234 \
+	-pwdo "$tpm_password" \
 	-per 0 \
-|| warn "Warning: Unable to define NVRAM space; trying anyway"
+|| die "Warning: Unable to define NVRAM space; trying anyway"
 
 
 nv_writevalue \
@@ -58,4 +60,4 @@ rm /tmp/sealed
 url="otpauth://totp/TPMTOTP?secret=$secret"
 
 qrenc "$url"
-echo "$url"
+#echo "$url"
