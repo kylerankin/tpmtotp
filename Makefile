@@ -50,7 +50,6 @@ qrenc: qrenc.c
 		-o $@ \
 		$^ \
 		../qrencode-3.4.4/.libs/libqrencode.so \
-		$(LDLIBS)
 
 sealtotp: sealtotp.c base32.c
 	$(CC) \
