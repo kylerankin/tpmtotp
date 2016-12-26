@@ -8,3 +8,7 @@ tags
 .canary
 .*.swp
 .*.swo
+util/tpm
+qrenc
+totp
+base32
