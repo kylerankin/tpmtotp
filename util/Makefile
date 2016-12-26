@@ -20,6 +20,7 @@ PROGS += \
 	unsealfile \
 	forceclear \
 	takeown \
+	extend \
 
 NOPROGS += \
 	pcrread \

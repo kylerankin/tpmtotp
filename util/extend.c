@@ -66,7 +66,7 @@ static void usage(){
 	exit(-1);
 }
 
-int main(int argc, char *argv[])
+static int mymain(int argc, char *argv[])
 {
     int ret = 0;
     char * message = NULL;
@@ -152,3 +152,6 @@ int main(int argc, char *argv[])
     }
     exit(ret);
 }
+
+#include "tpm_command.h"
+tpm_command_register("extend", mymain, usage)
