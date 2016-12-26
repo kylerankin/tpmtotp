@@ -53,7 +53,7 @@
 /* local prototypes */
 void printUsage(void);
 
-int main(int argc, char *argv[])
+static int mymain(int argc, char *argv[])
 {
 	int ret = 0;
         int i;
@@ -91,3 +91,6 @@ void printUsage(void)
     printf("\n");
     exit(1);
 }
+
+#include "tpm_command.h"
+tpm_command_register("forceclear", mymain, printUsage)

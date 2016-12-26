@@ -57,7 +57,7 @@ static void printUsage(void)
     printf("\tOmitting -pwds sets the SRK auth to all zeros\n");
 }
 
-int main(int argc, char *argv[])
+static int mymain(int argc, char *argv[])
 {
 	int ret;
 	unsigned char ownerAuth[20];
@@ -356,3 +356,6 @@ int main(int argc, char *argv[])
 
 	exit(0);
 }
+
+#include "tpm_command.h"
+tpm_command_register("takeclear", mymain, printUsage)

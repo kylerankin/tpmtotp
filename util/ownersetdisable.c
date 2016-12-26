@@ -49,6 +49,7 @@
 #include "tpm.h"
 #include "tpmutil.h"
 #include <tpmfunc.h>
+#include "tpm_command.h"
 
 static void printUsage() {
 	printf("Usage: ownersetdisable [-en]\n");
@@ -63,7 +64,7 @@ static void printUsage() {
 }
 
 
-int main(int argc, char *argv[])
+static int mymain(int argc, char *argv[])
 {
     int ret;
     char * ownerPassword = NULL;
@@ -150,3 +151,5 @@ int main(int argc, char *argv[])
     exit(ret);
 }
 
+
+tpm_command_register("ownersetdisable", mymain, printUsage)

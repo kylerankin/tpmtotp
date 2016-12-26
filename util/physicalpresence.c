@@ -50,7 +50,7 @@
 
 static void print_usage(void);
 
-int main(int argc, char *argv[])
+static int mymain(int argc, char *argv[])
 {
     int 	ret = 0;
     int		i;			/* argc iterator */
@@ -215,3 +215,5 @@ static void print_usage(void)
     return;
 }
 
+#include "tpm_command.h"
+tpm_command_register("physicalpresence", mymain, print_usage)

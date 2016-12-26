@@ -2,6 +2,8 @@
 # Generate a random secret, seal it with the PCRs
 # and write it to the TPM NVRAM.
 #
+# Pass in a hostname if you want to change it from the default string
+#
 
 die() {
 	echo >&2 "$@"
@@ -12,7 +14,18 @@ warn() {
 	echo >&2 "$@"
 }
 
-dd if=/dev/urandom of=/tmp/secret bs=1 count=20 \
+HOST="$1"
+if [ -z "$HOST" ]; then
+	HOST="TPMTOTP"
+fi
+
+dd \
+	iflag=fullblock \
+	if=/dev/urandom \
+	of=/tmp/secret \
+	count=1 \
+	bs=20 \
+	2>/dev/null \
 || die "Unable to generate 20 random bytes"
 
 secret="`base32 < /tmp/secret`"
@@ -20,7 +33,7 @@ secret="`base32 < /tmp/secret`"
 # Use the current values of the PCRs, which will be read
 # from the TPM as part of the sealing ("X").
 # should this read the storage root key?
-sealfile2 \
+tpm sealfile2 \
 	-if /tmp/secret \
 	-of /tmp/sealed \
 	-hk 40000000 \
@@ -38,13 +51,13 @@ rm /tmp/secret
 #
 # The permissions are 0 since there is nothing special
 # about the sealed file
-physicalpresence -s \
+tpm physicalpresence -s \
 || warn "Warning: Unable to assert physical presence"
 
 read -s -p "TPM Owner password: " tpm_password
 echo
 
-nv_definespace \
+tpm nv_definespace \
 	-in 4d47 \
 	-sz 312 \
 	-pwdo "$tpm_password" \
@@ -52,14 +65,14 @@ nv_definespace \
 || die "Warning: Unable to define NVRAM space; trying anyway"
 
 
-nv_writevalue \
+tpm nv_writevalue \
 	-in 4d47 \
 	-if /tmp/sealed \
 || die "Unable to write sealed secret to NVRAM"
 
 rm /tmp/sealed
 
-url="otpauth://totp/TPMTOTP?secret=$secret"
+url="otpauth://totp/$HOST?secret=$secret"
 
 qrenc "$url"
 #echo "$url"

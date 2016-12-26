@@ -55,7 +55,7 @@ static void printUsage()
     printf("physicaldisable:\n");
 }
 
-int main(int argc, char *argv[])
+int mymain(int argc, char *argv[])
 {
 	int ret;
         int i;
@@ -87,3 +87,5 @@ int main(int argc, char *argv[])
 	exit(ret);
 }
 
+#include "tpm_command.h"
+tpm_command_register("physicaldisable", mymain, printUsage)

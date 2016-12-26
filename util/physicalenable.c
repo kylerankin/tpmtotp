@@ -57,7 +57,7 @@ static void printUsage()
 
 
 
-int main(int argc, char *argv[])
+static int mymain(int argc, char *argv[])
 {
 	int ret;
         int i;
@@ -90,3 +90,5 @@ int main(int argc, char *argv[])
 	return ret;
 }
 
+#include "tpm_command.h"
+tpm_command_register("physicalenable", mymain, printUsage)

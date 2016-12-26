@@ -68,7 +68,7 @@ static void printUsage(void)
     exit(-1);
 }
 
-int main(int argc, char *argv[])
+static int mymain(int argc, char *argv[])
 {
     int ret;
     struct stat sbuf;
@@ -388,4 +388,5 @@ int main(int argc, char *argv[])
     exit(0);
 }
 
-
+#include "tpm_command.h"
+tpm_command_register("sealfile2", mymain, printUsage)

@@ -56,6 +56,7 @@
 #include "tpmfunc.h"
 #include "tpm_constants.h"
 #include "tpm_structures.h"
+#include "tpm_command.h"
 
 
 /* local functions */
@@ -95,7 +96,7 @@ static void usage()
 }
 
 
-int main(int argc, char * argv[])
+static int mymain(int argc, char * argv[])
 {
     const char * ownerPassword = NULL;
     const char *ownerAuthFilename = NULL;
@@ -436,3 +437,6 @@ uint32_t readtpm(TPM_NV_INDEX index,
     }
     return ret;
 }
+
+
+tpm_command_register("nv_readvalue", mymain, usage)

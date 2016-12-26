@@ -64,6 +64,7 @@
 #include "tpmfunc.h"
 #include "tpm_constants.h"
 #include "tpm_structures.h"
+#include "tpm_command.h"
 
 /* local prototypes */
 
@@ -76,7 +77,7 @@ static void usage() {
 	       "pcrreset -ix 1\n");
 }
 
-int main(int argc, char * argv[]) {
+static int mymain(int argc, char * argv[]) {
 	int i = 0;
 	int ret = 0;
 	int index = -1;
@@ -139,3 +140,5 @@ int main(int argc, char * argv[]) {
 	}
 	exit(ret);
 }
+
+tpm_command_register("pcrreset", mymain, usage)

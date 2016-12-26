@@ -6,13 +6,13 @@ die() {
 	exit 1
 }
 
-nv_readvalue \
+tpm nv_readvalue \
 	-in 4d47 \
 	-sz 312 \
 	-of /tmp/sealed \
 || die "Unable to retrieve sealed file from TPM NV"
 
-unsealfile  \
+tpm unsealfile  \
 	-hk 40000000 \
 	-if /tmp/sealed \
 	-of /tmp/secret \

@@ -72,7 +72,7 @@ static void usage() {
 	exit(-1);
 }
 
-int main(int argc, char * argv[])
+static int mymain(int argc, char * argv[])
 {
     uint32_t ret;
     int i =	0;
@@ -223,3 +223,6 @@ int main(int argc, char * argv[])
 
     return ret;
 }
+
+#include "tpm_command.h"
+tpm_command_register("counter_create", mymain, usage)

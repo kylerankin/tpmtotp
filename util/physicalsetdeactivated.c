@@ -50,9 +50,9 @@
 #include "tpmutil.h"
 #include <tpmfunc.h>
 
-void print_usage(void);
+static void print_usage(void);
 
-int main(int argc, char *argv[])
+static int mymain(int argc, char *argv[])
 {
     int 	ret = 0;
     int		i;			/* argc iterator */
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
     return ret;
 }
 
-void print_usage(void)
+static void print_usage(void)
 {
     printf("\n");
     printf("physicalsetdeactivated\n");
@@ -104,3 +104,5 @@ void print_usage(void)
     return;
 }
 
+#include "tpm_command.h"
+tpm_command_register("physicalsetdeactivated", mymain, print_usage)

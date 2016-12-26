@@ -45,7 +45,7 @@
    
 static void printUsage(void);
 
-int main(int argc, char *argv[])
+static int mymain(int argc, char *argv[])
    {
    int ret;
    struct stat sbuf;
@@ -220,3 +220,6 @@ static void printUsage()
    printf("    -h                print usage information (this message)\n");
    exit(-1);
    }
+
+#include "tpm_command.h"
+tpm_command_register("unsealfile", mymain, printUsage)

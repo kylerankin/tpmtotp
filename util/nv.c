@@ -54,7 +54,7 @@
 #include "tpmfunc.h"
 #include "tpm_constants.h"
 #include "tpm_structures.h"
-
+#include "tpm_command.h"
 
 /* local functions */
 
@@ -72,7 +72,7 @@ uint32_t TestNVStorageAuth(uint32_t parhandle,
 
 
 
-static void usage() {
+static void usage(void) {
 	printf("Usage: nv <owner password> -i index -d data [-p permission] [-a <area password>]\n");
 	printf("\n");
 	printf(" -i index     : The index of the memory to use.\n");
@@ -90,7 +90,7 @@ static void usage() {
 }
 
 
-int main(int argc, char * argv[]) {
+static int nv_main(int argc, char * argv[]) {
 	char * keypass = NULL;
 	char * areapass = NULL;
 	uint32_t parhandle;             /* handle of parent key */
@@ -296,6 +296,8 @@ uint32_t TestNVStorage(uint32_t parhandle,
 	}
 	return ret;
 }
+
+tpm_command_register("nv", nv_main, usage)
 
 uint32_t TestNVStorageAuth(uint32_t parhandle,
                            unsigned char *passptr1,

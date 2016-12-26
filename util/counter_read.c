@@ -66,7 +66,7 @@ static void usage() {
 	printf("counter_read -ix 5\n");
 }
 
-int main(int argc, char * argv[]) {
+static int mymain(int argc, char * argv[]) {
 	uint32_t ret;
 	int i =	0;
 	uint32_t id = -1;
@@ -128,3 +128,6 @@ int main(int argc, char * argv[]) {
 	}
 	return ret;
 }
+
+#include "tpm_command.h"
+tpm_command_register("counter_read", mymain, usage)

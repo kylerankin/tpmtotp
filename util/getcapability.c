@@ -199,7 +199,7 @@ static int prepare_subcap(uint32_t cap,
 	return handled;
 }
 
-int main(int argc, char *argv[])
+static int mymain(int argc, char *argv[])
 {
     uint32_t ret;
     STACK_TPM_BUFFER(resp);
@@ -777,3 +777,6 @@ static void ParseArgs(int argc, char *argv[])
     }
     return;
 }
+
+#include "tpm_command.h"
+tpm_command_register("getcapability", mymain, printUsage)

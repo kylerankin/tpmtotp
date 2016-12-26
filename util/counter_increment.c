@@ -67,7 +67,7 @@ static void usage() {
 	printf("counter_increment -ix 5 -pwdc MyCounter\n");
 }
 
-int main(int argc, char * argv[]) {
+static int mymain(int argc, char * argv[]) {
 	char * counterpass = NULL;
 	unsigned char * passptr1 = NULL;
 	unsigned char passhash1[20];
@@ -164,3 +164,6 @@ int main(int argc, char * argv[]) {
 
 	return ret;
 }
+
+#include "tpm_command.h"
+tpm_command_register("counter_increment", mymain, usage)

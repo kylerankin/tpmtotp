@@ -54,6 +54,7 @@
 #include "tpmfunc.h"
 #include "tpm_constants.h"
 #include "tpm_structures.h"
+#include "tpm_command.h"
 
 
 static void printUsage() {
@@ -81,7 +82,7 @@ static void printUsage() {
 	exit(-1);
 }
 
-int main(int argc, char * argv[])
+static int mymain(int argc, char * argv[])
 {
     const char *ownerPassword = NULL;
     const char *ownerAuthFilename = NULL;
@@ -454,3 +455,5 @@ int main(int argc, char * argv[])
 
     exit(ret);
 }
+
+tpm_command_register("nv_definespace", mymain, printUsage)

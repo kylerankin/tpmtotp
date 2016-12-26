@@ -129,9 +129,13 @@ NOPROGS += \
 	verifydelegation \
 	verifyfile \
 
-all: $(PROGS)
-%: %.c
-	$(CC) $(CFLAGS) -o $@ $< -L../libtpm -ltpm -L../../mbedtls-2.3.0/library -lmbedcrypto
+all: tpm
+
+LDFLAGS += \
+	-L../libtpm \
+	-ltpm \
+	-L../../mbedtls-2.3.0/library \
+	-lmbedcrypto \
 
 CFLAGS += \
 	-ggdb \
@@ -152,5 +156,11 @@ CFLAGS += \
 	-I ../../mbedtls-2.3.0/include \
 
 
+# Generate the wrapper program with all of the executables linked in
+tpm: tpm_command.o $(foreach i,$(PROGS),$i.o)
+	$(CC) -o $@ $^ $(LDFLAGS)
+
 clean: $(FORCE)
-	$(RM) $(PROGS)
+	$(RM) *.o .*.o.d tpm core
+
+-include .*.d
