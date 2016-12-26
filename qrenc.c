@@ -27,6 +27,7 @@
 #include <getopt.h>
 #include <qrencode.h>
 
+static int unicode_output = 0;
 static const int margin = 1;
 
 static const char * utf8(int cp)
@@ -44,14 +45,24 @@ static const char * utf8(int cp)
 
 static const char * block(int cp)
 {
-	if (cp == 0)
-		return utf8(0x2588);
-	if (cp == 1)
-		return utf8(0x2580);
-	if (cp == 2)
-		return utf8(0x2584);
-	if (cp == 3)
-		return " ";
+	if (unicode_output)
+	{
+		if (cp == 0)
+			return utf8(0x2588);
+		if (cp == 1)
+			return utf8(0x2580);
+		if (cp == 2)
+			return utf8(0x2584);
+		if (cp == 3)
+			return " ";
+	} else {
+		// code page whatever
+		if (cp == 0) return "\xDB";
+		if (cp == 1) return "\xDC";
+		if (cp == 2) return "\xDF";
+		if (cp == 3) return " ";
+	}
+
 	return "--?";
 }
 
@@ -62,35 +73,8 @@ writeANSI(
 	FILE * const fp
 )
 {
-	const char white[] = "\033[47m";
-	const size_t white_s = sizeof(white)-1;
-	const char black[] = "\033[40m";
-	const char black_s = sizeof(black)-1;
-
-	const int size = 1;
-
-	const size_t realwidth = (qrcode->width + margin * 2) * size;
-	const size_t buffer_s = ( realwidth * white_s ) * 2;
-	wchar_t buffer[qrcode->width + margin*2 + 4];
-
-	if(buffer == NULL) {
-		fprintf(stderr, "Failed to allocate memory.\n");
-		exit(1);
-	}
-
-	/* top margin */
-	//writeANSI_margin(fp, realwidth, buffer, buffer_s, white, white_s);
-
 	/* raw data */
 	const unsigned char * const p = qrcode->data;
-
-#if 0
-		219,
-		220,
-		223,
-		' ',
-#endif
-
 	
 	for(int y=0 ; y < margin ; y++)
 	{
@@ -99,18 +83,16 @@ writeANSI(
 		fputs("\n", fp);
 	}
 
-	for(int y=0; y < qrcode->width; y += 2) {
+	for(int y=0; y < qrcode->width; y += 2)
+	{
 		const unsigned char * const row0 = p + (y+0)*qrcode->width;
 		const unsigned char * const row1 = p + (y+1)*qrcode->width;
-
-		int offset = 0;
 
 		for(int x=0; x < margin*2; x++ )
 			fputs(block(0), fp);
 
-		int last = 0;
-
-		for(int x=0; x < qrcode->width; x++) {
+		for(int x=0; x < qrcode->width; x++)
+		{
 			int r0 = row0[x] & 0x1;
 			int r1 = y < qrcode->width-1 ? row1[x] & 0x1 : 0;
 
@@ -140,6 +122,12 @@ int main(int argc, char *argv[])
 	const char * qr_string = "";
 	if (argc > 1)
 		qr_string = argv[1];
+
+	if (strlen(qr_string) == 0)
+	{
+		fprintf(stderr, "%s: empty strings are not valid\n", argv[0]);
+		return -1;
+	}
 
 	QRcode * qrcode = QRcode_encodeString(
 		qr_string,
