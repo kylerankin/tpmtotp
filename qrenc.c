@@ -27,7 +27,7 @@
 #include <getopt.h>
 #include <qrencode.h>
 
-static int unicode_output = 0;
+static int unicode_output = 1;
 static const int margin = 1;
 
 static const char * utf8(int cp)
