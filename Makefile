@@ -63,6 +63,7 @@ sealtotp: sealtotp.c base32.c
 clean:
 	rm -f *.o $(APPS)
 	$(MAKE) -C libtpm clean
+	$(MAKE) -C util clean
 
 install:
 	install sealtotp unsealtotp plymouth-unsealtotp /usr/bin/
