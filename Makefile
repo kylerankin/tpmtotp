@@ -1,4 +1,4 @@
-CFLAGS = \
+CFLAGS += \
 	-ggdb \
 	-O3 \
 	-Wp,-MMD,$(dir $@).$(notdir $@).d \
@@ -14,7 +14,6 @@ CFLAGS = \
 	-DTPM_USE_TAG_IN_STRUCTURE=1 \
 	-DTPM_USE_CHARDEV=1 \
 	-I ./libtpm \
-	-I ../mbedtls-2.3.0/include \
 
 
 PLYMOUTH_CFLAGS = `pkg-config --cflags ply-boot-client`
@@ -49,7 +48,8 @@ qrenc: qrenc.c
 		-I../qrencode-3.4.4 \
 		-o $@ \
 		$^ \
-		../qrencode-3.4.4/.libs/libqrencode.so \
+		$(LDFLAGS) \
+		-lqrencode \
 
 sealtotp: sealtotp.c base32.c
 	$(CC) \

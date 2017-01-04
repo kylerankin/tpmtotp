@@ -132,13 +132,12 @@ NOPROGS += \
 
 all: tpm
 
-LDFLAGS += \
+EXTRA_LDFLAGS += \
 	-L../libtpm \
 	-ltpm \
-	-L../../mbedtls-2.3.0/library \
 	-lmbedcrypto \
 
-CFLAGS += \
+EXTRA_CFLAGS = \
 	-ggdb \
 	-O3 \
 	-Wp,-MMD,$(dir $@).$(notdir $@).d \
@@ -154,12 +153,14 @@ CFLAGS += \
 	-DTPM_USE_TAG_IN_STRUCTURE=1 \
 	-DTPM_USE_CHARDEV=1 \
 	-I ../libtpm \
-	-I ../../mbedtls-2.3.0/include \
+
+%.o: %.c
+	$(CC) $(EXTRA_CFLAGS) $(CFLAGS) -o $@ -c $<
 
 
 # Generate the wrapper program with all of the executables linked in
 tpm: tpm_command.o $(foreach i,$(PROGS),$i.o)
-	$(CC) -o $@ $^ $(LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(EXTRA_LDFLAGS)
 
 clean: $(FORCE)
 	$(RM) *.o .*.o.d tpm core

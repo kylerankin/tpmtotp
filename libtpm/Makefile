@@ -1,4 +1,4 @@
-CFLAGS = \
+EXTRA_CFLAGS = \
 	-Werror=implicit-function-declaration \
 	-fPIC \
 	-Wall \
@@ -13,7 +13,6 @@ CFLAGS = \
 	-DTPM_USE_CHARDEV=1 \
 	$(CONFIG_OPENSSL) \
 	-I. \
-	-I../../mbedtls-2.3.0/include \
 
 LIBRARY = libtpm.so
 
@@ -66,10 +65,12 @@ SOURCES = \
 
 OBJECTS = $(SOURCES:.c=.o)
 
-
 $(LIBRARY): $(OBJECTS)
 	@-$(RM) "$@"
 	$(CC) -shared -o "$@" $^
+
+%.o: %.c
+	$(CC) $(EXTRA_CFLAGS) $(CFLAGS) -o $@ -c $<
 
 clean:
 	$(RM) -f *.o *.a
