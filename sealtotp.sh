@@ -20,7 +20,6 @@ if [ -z "$HOST" ]; then
 fi
 
 dd \
-	iflag=fullblock \
 	if=/dev/urandom \
 	of=/tmp/secret \
 	count=1 \
