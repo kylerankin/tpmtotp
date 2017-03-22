@@ -179,7 +179,7 @@ static inline void BN_free(BIGNUM * n)
 #include <mbedtls/x509_crt.h>
 typedef mbedtls_x509_crt X509;
 
-static inline X509 * d2i_x509(X509 **x509_ptr, const unsigned char **in, int len)
+static inline X509 * d2i_X509(X509 **x509_ptr, const unsigned char **in, int len)
 {
 	X509 * const x509 = x509_ptr ? *x509_ptr : calloc(1, sizeof(*x509));
 	int rc = mbedtls_x509_crt_parse_der(x509, *in, len);

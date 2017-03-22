@@ -45,9 +45,9 @@
 #include <openssl/evp.h>
 
 /* local prototypes */
-void printUsage(void);
+static void printUsage(void);
 
-int main(int argc, char *argv[])
+static int mymain(int argc, char *argv[])
    {
    int ret = 0;
    int i;
@@ -185,3 +185,6 @@ void printUsage(void)
     printf("\n");
     exit(1);
 }
+
+#include "tpm_command.h"
+tpm_command_register("getpubek", mymain, printUsage)

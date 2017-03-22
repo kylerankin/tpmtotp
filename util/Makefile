@@ -21,6 +21,11 @@ PROGS += \
 	forceclear \
 	takeown \
 	extend \
+	quote \
+	listkeys \
+	loadkey \
+	createek \
+	getpubkey \
 
 NOPROGS += \
 	pcrread \
@@ -36,7 +41,6 @@ NOPROGS += \
 	cmk_loadmigrationblob \
 	cmk_setrestrictions \
 	counter_calc_incr \
-	createek \
 	createkeydelegation \
 	createownerdelegation \
 	createrevek \
@@ -50,48 +54,32 @@ NOPROGS += \
 	dumpkey \
 	enableaudit \
 	evictkey \
-	extend \
 	flushspecific \
 	forceclear \
 	getauditdigest \
 	getauditdigestsigned \
 	getcontextcount \
 	getpubek \
-	getpubkey \
 	getticks \
 	identity \
 	keycontrol \
 	killmaintenancefeature \
 	libtpm-config \
-	listkeys \
 	loadauthcontext \
 	loadcontext \
-	loadkey \
 	loadkeycontext \
 	loadmanumaintpub \
 	loadmigrationblob \
 	loadownerdelegation \
 	migrate \
 	migratekey \
-	nv \
-	nv_definespace \
-	nv_readvalue \
-	nv_writevalue \
 	ownerreadinternalpub \
-	ownersetdisable \
-	pcrread \
-	pcrreset \
-	physicaldisable \
-	physicalenable \
-	physicalpresence \
-	physicalsetdeactivated \
 
 NO = \
 	bindfile \
 	cmk_createkey \
 	cmk_migrate \
 	createkey \
-	quote \
 	quote2 \
 
 NOPROGS += \

@@ -53,10 +53,10 @@
 #include "tpmfunc.h"
 
 /* local prototypes */
-void print_usage(void);
+static void printUsage(void);
 
 
-int main(int argc, char *argv[])
+static int mymain(int argc, char *argv[])
 {
 	int ret = 0;
         int			i;			/* argc iterator */
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
         for (i=1 ; (i<argc) && (ret == 0) ; i++) {
             if (strcmp(argv[i],"-h") == 0) {
                 ret = ERR_BAD_ARG;
-                print_usage();
+                printUsage();
             }
 	    else if (strcmp(argv[i],"-v") == 0) {
 		TPM_setlog(1);
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
             else {
                 printf("\n%s is not a valid option\n", argv[i]);
                 ret = ERR_BAD_ARG;
-                print_usage();
+                printUsage();
             }
         }
 
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
  	exit(ret);
 }
 
-void print_usage(void)
+void printUsage(void)
 {
     printf("\n");
     printf("createek\n");
@@ -98,3 +98,6 @@ void print_usage(void)
     printf("\n");
     return;
 }
+
+#include "tpm_command.h"
+tpm_command_register("createek", mymain, printUsage)

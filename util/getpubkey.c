@@ -50,7 +50,7 @@ static void printUsage(const char *prg)
     printf("\n");
 }
 
-int main(int argc, char *argv[])
+static int mymain(int argc, char *argv[])
 {
    int ret = 0;
    int i;
@@ -139,3 +139,5 @@ int main(int argc, char *argv[])
    exit(0);
 }
 
+#include "tpm_command.h"
+tpm_command_register("getpubkey", mymain, printUsage)

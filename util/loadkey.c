@@ -44,9 +44,9 @@
 #include <unistd.h>
 #include "tpmfunc.h"
 
-void printUsage(void);
+static void printUsage(void);
 
-int main(int argc, char *argv[])
+static int mymain(int argc, char *argv[])
 {
     int ret;
     struct stat sbuf;
@@ -192,3 +192,6 @@ void printUsage()
     
     exit(-1);
 }
+
+#include "tpm_command.h"
+tpm_command_register("loadkey", mymain, printUsage)

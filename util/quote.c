@@ -56,7 +56,6 @@
 #include <openssl/rsa.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
-#endif
 
 int GetRSAKey(RSA **rsa,
 	      X509 *x509Certificate);
@@ -65,10 +64,11 @@ uint32_t TPM_ValidatePCRCompositeSignatureRSA(TPM_PCR_COMPOSITE *tpc,
 					      RSA *rsaKey,
 					      struct tpm_buffer *signature,
 					      uint16_t sigscheme);
+#endif
 
 static void printUsage(void);
 
-int main(int argc, char *argv[])
+static int mymain(int argc, char *argv[])
 {
     int ret;			/* general return value */
     uint32_t keyhandle = 0;	/* handle of quote key */
@@ -222,6 +222,7 @@ int main(int argc, char *argv[])
     }
     printf("Verification against AIK succeeded\n");
 
+#ifdef CONFIG_OPENSSL
     /* optionally verify the quote signature against the key certificate */
     if (certFilename != NULL) {
 	unsigned char *certStream = NULL;	/* freed @1 */
@@ -273,8 +274,12 @@ int main(int argc, char *argv[])
 	X509_free(x509Certificate); 	/* @2 */
 	RSA_free(rsaKey);		/* @3 */
     }
+#endif
+
     exit(ret);
 }
+
+#ifdef CONFIG_OPENSSL
 
 /* FIXME move to library pcrs.c  */
 /* 
@@ -345,6 +350,7 @@ int GetRSAKey(RSA **rsa,		/* freed by caller */
     }
     return rc;
 }
+#endif
 
 /* FIXME move to library */
 
@@ -355,6 +361,12 @@ static void printUsage()
 	   "-hk <key handle in hex>\n"
 	   "-bm <pcr mask in hex>\n"
 	   "[-pwdk <key password>]\n"
-	   "[-cert <key certificate to verify the quote signature]\n");
+#ifdef CONFIG_OPENSSL
+	   "[-cert <key certificate to verify the quote signature]\n"
+#endif
+    );
     exit(-1);
 }
+
+#include "tpm_command.h"
+tpm_command_register("quote", mymain, printUsage)

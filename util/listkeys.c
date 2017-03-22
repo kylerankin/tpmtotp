@@ -48,9 +48,9 @@
 #include "tpmfunc.h"
 
 /* local prototypes */
-void printUsage(void);
+static void printUsage(void);
 
-int main(int argc, char *argv[])
+static int mymain(int argc, char *argv[])
    {
    int ret = 0;
    uint32_t handle;
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
    exit(0);
    }
 
-void printUsage(void)
+static void printUsage(void)
 {
     printf("\n");
     printf("listkeys\n");
@@ -101,3 +101,6 @@ void printUsage(void)
     exit(1);
     return;
 }
+
+#include "tpm_command.h"
+tpm_command_register("listkeys", mymain, printUsage)
