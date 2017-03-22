@@ -27,7 +27,7 @@ PLYMOUTH_LDLIBS = `pkg-config --libs ply-boot-client`
 
 APPS=qrenc totp base32
 
-all: libtpm/libtpm.a $(APPS) extra
+all: $(APPS) extra
 
 extra:
 	$(MAKE) -C util

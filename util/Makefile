@@ -157,9 +157,9 @@ EXTRA_CFLAGS = \
 %.o: %.c
 	$(CC) $(EXTRA_CFLAGS) $(CFLAGS) -o $@ -c $<
 
-
 # Generate the wrapper program with all of the executables linked in
 tpm: tpm_command.o $(foreach i,$(PROGS),$i.o)
+	$(MAKE) -C ../libtpm
 	$(CC) -o $@ $^ $(LDFLAGS) $(EXTRA_LDFLAGS)
 
 clean: $(FORCE)
