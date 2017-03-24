@@ -358,4 +358,4 @@ static int mymain(int argc, char *argv[])
 }
 
 #include "tpm_command.h"
-tpm_command_register("takeclear", mymain, printUsage)
+tpm_command_register("takeown", mymain, printUsage)

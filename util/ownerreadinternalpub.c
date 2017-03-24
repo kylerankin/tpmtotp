@@ -67,7 +67,7 @@ static void printUsage() {
 }
 
 
-int main(int argc, char *argv[])
+static int mymain(int argc, char *argv[])
 {
     const char *ownerAuthFilename = NULL;
     const char * ownerPassword = NULL;
@@ -202,3 +202,6 @@ int main(int argc, char *argv[])
     exit(ret);
 }
 
+
+#include "tpm_command.h"
+tpm_command_register("ownerreadinternalpub", mymain, printUsage)

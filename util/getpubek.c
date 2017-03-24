@@ -40,9 +40,15 @@
 #include <stdio.h>
 #include <string.h>
 #include "tpmfunc.h"
+
+#ifdef CONFIG_USE_OPENSSL
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 #include <openssl/evp.h>
+#else
+#include "mbedtls-compat.h"
+#endif
+
 
 /* local prototypes */
 static void printUsage(void);
@@ -54,7 +60,6 @@ static int mymain(int argc, char *argv[])
    pubkeydata pubek;
    RSA *rsa;                       /* OpenSSL format Public Key */
    FILE *keyfile;                  /* output file for public key */
-   EVP_PKEY *pkey = NULL;          /* OpenSSL public key */
    const char *ownerPassword = NULL;
    const char *ownerAuthFilename = NULL;
    unsigned char ownerAuth[20];
@@ -141,8 +146,9 @@ static int mymain(int argc, char *argv[])
       printf("Error from TSS_convpubkey\n");
       exit(-3);
       }
+#ifdef CONFIG_USE_OPENSSL
    OpenSSL_add_all_algorithms();
-   pkey = EVP_PKEY_new();
+   EVP_PKEY *pkey = EVP_PKEY_new(); /* OpenSSL public key */
    if (pkey == NULL) {
        printf("Unable to create EVP_PKEY\n");
        exit(-4);
@@ -171,6 +177,23 @@ static int mymain(int argc, char *argv[])
    
    fclose(keyfile);
    EVP_PKEY_free(pkey);
+#else
+   mbedtls_pk_context pk;
+   mbedtls_pk_init(&pk);
+   mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
+   mbedtls_rsa_copy(mbedtls_pk_rsa(pk), rsa);
+
+   unsigned char buf[4096];
+   mbedtls_pk_write_key_pem(&pk, buf, sizeof(buf));
+   keyfile = fopen("pubek.pem","wb");
+   if (keyfile == NULL)
+      {
+      printf("Unable to create public key file\n");
+      exit(-5);
+      }
+   fprintf(keyfile, "%s", buf);
+   fclose(keyfile);
+#endif  
    exit(0);
    }
 

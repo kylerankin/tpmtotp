@@ -26,10 +26,11 @@ PROGS += \
 	loadkey \
 	createek \
 	getpubkey \
+	getpubek \
+	ownerreadinternalpub \
 
 NOPROGS += \
 	pcrread \
-	ownerreadinternalpub \
 	activateidentity \
 	calcfuturepcr \
 	certifykey \
@@ -59,7 +60,6 @@ NOPROGS += \
 	getauditdigest \
 	getauditdigestsigned \
 	getcontextcount \
-	getpubek \
 	getticks \
 	identity \
 	keycontrol \
@@ -106,7 +106,6 @@ NOPROGS += \
 	sha1start \
 	signfile \
 	signmsg \
-	takeown \
 	tickstampblob \
 	tpmbios \
 	tpminit \
