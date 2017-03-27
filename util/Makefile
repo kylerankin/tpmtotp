@@ -28,10 +28,10 @@ PROGS += \
 	getpubkey \
 	getpubek \
 	ownerreadinternalpub \
+	activateidentity \
 
 NOPROGS += \
 	pcrread \
-	activateidentity \
 	calcfuturepcr \
 	certifykey \
 	certifyselftest \

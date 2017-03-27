@@ -76,7 +76,7 @@ int Ossl_AES_Decrypt(unsigned char **decrypt_data,
 
 /* local prototypes */
 
-static void PrintUsage() {
+static void printUsage() {
     printf("activateidentity activates the identity blob agains the loaded AIK\n"
 	   "It optionally outputs the symmetric key.  If the AIK certificate is supplied, "
 	   "it is decrypted with the symmetric key");
@@ -101,7 +101,7 @@ static void PrintUsage() {
     exit(-1);
 }
 
-int main(int argc, char * argv[])
+static int mymain(int argc, char * argv[])
 {
     uint32_t ret = 0;
 
@@ -150,7 +150,7 @@ int main(int argc, char * argv[])
 	   }
 	   else {
 	       printf("-hk option needs a value\n");
-	       PrintUsage();
+	       printUsage();
 	   }
        }
        else if (!strcmp("-pwdo",argv[i])) {
@@ -159,7 +159,7 @@ int main(int argc, char * argv[])
 		ownerPassword = argv[i];
 	    } else {
 		printf("Missing parameter for -pwdo.\n");
-		PrintUsage();
+		printUsage();
 	    }
 	}
 	else if (!strcmp("-pwdk",argv[i])) {
@@ -168,7 +168,7 @@ int main(int argc, char * argv[])
 		aikPassword = argv[i];
 	    } else {
 		printf("Missing parameter for -pwdk.\n");
-		PrintUsage();
+		printUsage();
 	    }
 	}
 	else if (!strcmp("-if",argv[i])) {
@@ -177,7 +177,7 @@ int main(int argc, char * argv[])
 		blobFilename = argv[i];
 	    } else {
 		printf("Missing parameter for -if.\n");
-		PrintUsage();
+		printUsage();
 	    }
 	}
 	else if (!strcmp("-ok",argv[i])) {
@@ -187,7 +187,7 @@ int main(int argc, char * argv[])
 	    }
 	    else {
 		printf("Missing parameter for -ok\n");
-		PrintUsage();
+		printUsage();
 	    }
 	}
 	else if (strcmp(argv[i],"-aikcert") == 0) {
@@ -197,7 +197,7 @@ int main(int argc, char * argv[])
 	    }
 	    else {
 		printf("ERROR1007: -aikcert option needs a value\n");
-		PrintUsage();
+		printUsage();
 	    }
 	}
 	else if (strcmp(argv[i],"-aikcertenc") == 0) {
@@ -207,7 +207,7 @@ int main(int argc, char * argv[])
 	    }
 	    else {
 		printf("ERROR1007: -aikcertenc option needs a value\n");
-		PrintUsage();
+		printUsage();
 	    }
 	}
 	else if (!strcmp("-ok",argv[i])) {
@@ -217,7 +217,7 @@ int main(int argc, char * argv[])
 	    }
 	    else {
 		printf("Missing parameter for -ok\n");
-		PrintUsage();
+		printUsage();
 	    }
 	}
 	else if (!strcmp("-v",argv[i])) {
@@ -225,21 +225,21 @@ int main(int argc, char * argv[])
 	    verbose = TRUE;
 	}
 	else if (!strcmp("-h",argv[i])) {
-	    PrintUsage();
+	    printUsage();
 	}
 	else {
 	    printf("\n%s is not a valid option\n", argv[i]);
-	    PrintUsage();
+	    printUsage();
 	}
     }
     /* validate command line arguments */
     if (aikHandle == 0) {
 	printf("Missing AIK handle\n");
-	PrintUsage();
+	printUsage();
     }
     if (ownerPassword == NULL) {
 	printf("Missing owner password.\n");
-	PrintUsage();
+	printUsage();
     }
     if (blobFilename == NULL) {
 	printf("Missing input file name\n");
@@ -434,5 +434,5 @@ int Ossl_AES_Decrypt(unsigned char **decrypt_data,   		/* output, caller frees *
     return rc;
 }
 
-
-
+#include "tpm_command.h"
+tpm_command_register("activateidentiy", mymain, printUsage)
