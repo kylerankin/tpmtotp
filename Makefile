@@ -21,7 +21,7 @@ PLYMOUTH_CFLAGS = `pkg-config --cflags ply-boot-client`
 #LDLIBS=-Llibtpm -ltpm -loath /usr/lib/x86_64-linux-gnu/libcrypto.a -ldl
 #LDLIBS=-Llibtpm -ltpm -loath ../libressl-2.4.1/crypto/.libs/libcrypto.a -ldl
 #LDLIBS=-Llibtpm -ltpm -loath ../mbedtls-2.3.0/library/libmbedcrypto.a -ldl
-LDLIBS=-Llibtpm -ltpm -L../mbedtls-2.3.0/library/ -lmbedcrypto -ldl
+LDLIBS=-L../mbedtls-2.3.0/library/ -lmbedcrypto -ldl
 
 PLYMOUTH_LDLIBS = `pkg-config --libs ply-boot-client`
 
