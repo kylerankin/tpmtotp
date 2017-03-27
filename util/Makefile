@@ -29,6 +29,7 @@ PROGS += \
 	getpubek \
 	ownerreadinternalpub \
 	activateidentity \
+	identity \
 
 NOPROGS += \
 	pcrread \
@@ -61,7 +62,6 @@ NOPROGS += \
 	getauditdigestsigned \
 	getcontextcount \
 	getticks \
-	identity \
 	keycontrol \
 	killmaintenancefeature \
 	libtpm-config \

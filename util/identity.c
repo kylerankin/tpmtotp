@@ -49,9 +49,13 @@
 #include <winsock2.h>
 #endif
 
+#ifdef CONFIG_USE_OPENSSL
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 #include <openssl/evp.h>
+#else
+#include "mbedtls-compat.h"
+#endif
 
 #include "tpm.h"
 #include "tpmutil.h"
@@ -75,7 +79,7 @@ static uint32_t do_activateIdentity(unsigned char * ownerAuth,
                                unsigned char * blobbuf, uint32_t blobbufsize,
                                uint32_t newhandle);
 
-static void usage() {
+static void printUsage() {
 	printf("Usage: identity -la <label> [options]\n"
 	       "   [-pwdo <owner password> -pwdof <owner authorization file name>\n");
 	printf("\n");
@@ -93,7 +97,7 @@ static void usage() {
 	exit(-1);
 }
 
-int main(int argc, char * argv[])
+static int mymain(int argc, char * argv[])
 {
     char * ownerPassword = NULL;
     const char *ownerAuthFilename = NULL;
@@ -116,7 +120,6 @@ int main(int argc, char * argv[])
     FILE *keyfile;                  /* output file for key token */
     FILE *pubkeyfile;               /* output file for public key token */
     RSA *rsa;                       /* OpenSSL format Public Key */
-    EVP_PKEY *pkey = NULL;          /* OpenSSL public key */
     unsigned char idkeyblob[4096];  /* area to hold key blob */
     unsigned int  idkeybloblen;     /* key blob length */
     char *keyname = NULL;           /* pointer to key name argument */
@@ -140,7 +143,7 @@ int main(int argc, char * argv[])
 		ownerPassword = argv[i];
 	    } else {
 		printf("Missing parameter for -pwdo.\n");
-		usage();
+		printUsage();
 	    }
 	}
 	else if (strcmp(argv[i],"-pwdof") == 0) {
@@ -150,7 +153,7 @@ int main(int argc, char * argv[])
 	    }
 	    else {
 		printf("-pwdof option needs a value\n");
-		usage();
+		printUsage();
 	    }
 	}
 	else if (!strcmp("-pwdk",argv[i])) {
@@ -159,7 +162,7 @@ int main(int argc, char * argv[])
 		usagepass = argv[i];
 	    } else {
 		printf("Missing parameter for -pwdk.\n");
-		usage();
+		printUsage();
 	    }
 	}
 	else if (!strcmp("-pwds",argv[i])) {
@@ -168,7 +171,7 @@ int main(int argc, char * argv[])
 		srkpass = argv[i];
 	    } else {
 		printf("Missing parameter for -pwds.\n");
-		usage();
+		printUsage();
 	    }
 	}
 	else if (!strcmp(argv[i], "-sz")) {
@@ -181,7 +184,7 @@ int main(int argc, char * argv[])
 	    }
 	    else {
 		printf("Missing parameter to -sz\n");
-		usage();
+		printUsage();
 	    }
 	}
 	else if (!strcmp(argv[i], "-exp")) {
@@ -194,7 +197,7 @@ int main(int argc, char * argv[])
 	    }
 	    else {
 		printf("Missing parameter to -exp\n");
-		usage();
+		printUsage();
 	    }
 	}
 	else if (!strcmp("-la",argv[i])) {
@@ -203,7 +206,7 @@ int main(int argc, char * argv[])
 		label = argv[i];
 	    } else {
 		printf("Missing parameter for -la.\n");
-		usage();
+		printUsage();
 	    }
 	}
 	else if (!strcmp("-ac",argv[i])) {
@@ -222,32 +225,32 @@ int main(int argc, char * argv[])
 	    }
 	    else {
 		printf("Missing parameter for -ok\n");
-		usage();
+		printUsage();
 	    }
 	}
 	else if (!strcmp("-v",argv[i])) {
 	    TPM_setlog(1);
 	}
 	else if (!strcmp("-h",argv[i])) {
-	    usage();
+	    printUsage();
 	}
 	else {
 	    printf("\n%s is not a valid option\n", argv[i]);
-	    usage();
+	    printUsage();
 	}
     }
 
     if ((ownerPassword == NULL) && (ownerAuthFilename == NULL)) {
 	printf("\nMissing -pwdo or -pwdof argument\n");
-	usage();
+	printUsage();
     }
     if ((ownerPassword != NULL) && (ownerAuthFilename != NULL)) {
 	printf("\nCannot have -pwdo and -pwdof arguments\n");
-	usage();
+	printUsage();
     }
     if (NULL == label) {
 	printf("Missing label.\n");
-	usage();
+	printUsage();
     }
 
     /* use the SHA1 hash of the password string as the Owner Authorization Data */
@@ -371,8 +374,9 @@ int main(int argc, char * argv[])
 	    printf("Error from TSS_convpubkey\n");
 	    exit(-1);
 	}
+#ifdef CONFIG_USE_OPENSSL
 	OpenSSL_add_all_algorithms();
-	pkey = EVP_PKEY_new();
+        EVP_PKEY *pkey = EVP_PKEY_new();         /* OpenSSL public key */
 	if (pkey == NULL) {
 	    printf("Unable to create EVP_PKEY\n");
 	    exit(-4);
@@ -395,6 +399,9 @@ int main(int argc, char * argv[])
 	}
 	fclose(pubkeyfile);
 	EVP_PKEY_free(pkey);
+#else
+	fprintf(stderr, "pem output not yet supported\n");
+#endif
 	ret = 0;
     }
     if (TRUE == activate) {
@@ -542,13 +549,12 @@ uint32_t   do_activateIdentity(unsigned char * ownerAuth,
 	rsa = getpubek(ownerAuth);
 	if (NULL != rsa) {
 		unsigned char out_blob[2048];
-		uint32_t blobsize;
-		unsigned char * blob;
 		STACK_TPM_BUFFER(returnbuffer)
 		unsigned char tpm_oaep_pad_str[] = { 'T' , 'C' , 'P' , 'A' };
+		uint32_t blobsize = RSA_size(rsa);
 
-		blobsize = RSA_size(rsa);
-		blob = malloc(blobsize);
+#ifdef CONFIG_OPENSSL
+		unsigned char * blob = malloc(blobsize);
 
 		/*
 		 * Add some padding to the data that need to
@@ -578,6 +584,23 @@ uint32_t   do_activateIdentity(unsigned char * ownerAuth,
 			       blobsize);
 			exit(-1);
 		}
+#else
+        /* Pad and then encrypt the owner data using the RSA public key */
+        ret = mbedtls_rsa_rsaes_oaep_encrypt(
+                rsa,
+                NULL,
+                NULL,
+                MBEDTLS_RSA_PUBLIC,
+                tpm_oaep_pad_str,
+                sizeof(tpm_oaep_pad_str),
+                blobbufsize,
+                blobbuf,
+                out_blob
+        );
+        if (ret != 0)
+                 return ERR_CRYPT_ERR;
+
+#endif
 
 
 		ret = TPM_ActivateIdentity(newhandle,
@@ -729,3 +752,6 @@ static RSA * getpubek(unsigned char * passhash)
 
 	return rsa;
 }
+
+#include "tpm_command.h"
+tpm_command_register("identity", mymain, printUsage)
