@@ -3,6 +3,7 @@
 
 die() {
 	echo >&2 "$@"
+	rm /tmp/sealed /tmp/secret 2>&-
 	exit 1
 }
 
