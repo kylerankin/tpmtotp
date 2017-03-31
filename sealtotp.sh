@@ -20,7 +20,6 @@ if [ -z "$HOST" ]; then
 fi
 
 dd \
-	iflag=fullblock \
 	if=/dev/urandom \
 	of=/tmp/secret \
 	count=1 \
@@ -41,7 +40,7 @@ tpm sealfile2 \
 	-ix 1 X \
 	-ix 2 X \
 	-ix 3 X \
-	-ix 4 X \
+	-ix 4 0000000000000000000000000000000000000000 \
 || die "Unable to seal secret"
 
 rm /tmp/secret
