@@ -122,7 +122,7 @@ static int mymain(int argc, char * argv[]) {
 	}
 	
 	
-	printf("Using counterpass: %s\n",counterpass);
+	//printf("Using counterpass: %s\n",counterpass);
 	
 	TSS_sha1(counterpass,strlen(counterpass),passhash1);
 	passptr1 = passhash1;
@@ -149,7 +149,7 @@ static int mymain(int argc, char * argv[]) {
 		       TPM_GetErrMsg(ret),
 		       ret);
 	} else {
-		printf("Value of the counter: ");
+		printf("%d: ", id);
 		i = 0;
 		while (i < (int)sizeof(buffer)){
 			printf("%02x",buffer[i]);

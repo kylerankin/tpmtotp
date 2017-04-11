@@ -118,7 +118,7 @@ static int mymain(int argc, char * argv[]) {
 		       TPM_GetErrMsg(ret),
 		       ret);
 	} else {
-		printf("%08x: ", id);
+		printf("%d: ", id);
 		i = 0;
 		while (i < (int)sizeof(buffer)){
 			printf("%02x",buffer[i]);

@@ -154,8 +154,8 @@ static int mymain(int argc, char * argv[])
 	printf("Input parameters -la or -pwdc wrong or missing!\n");
 	usage();
     }
-    printf("Using ownerPassword : %s\n", ownerPassword);
-    printf("Using counterPassword: %s\n", counterPassword);
+    //printf("Using ownerPassword : %s\n", ownerPassword);
+    //printf("Using counterPassword: %s\n", counterPassword);
 	
     parhandle = 0x00000000;	/* dummy value, owner */
 
@@ -211,9 +211,10 @@ static int mymain(int argc, char * argv[])
 	       ret);
     } else {
 		
-	printf("New counter id: %d\n",counterId);
+	//printf("New counter id: %d\n",counterId);
 	i = 0;
-	printf("Counter start value: ");
+	//printf("Counter start value: ");
+	printf("%d: ",counterId);
 	while (i < TPM_COUNTER_VALUE_SIZE) {
 	    printf("%02X",counterValue[i]);
 	    i++;
