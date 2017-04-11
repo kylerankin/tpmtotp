@@ -67,7 +67,7 @@
 
 /* local prototypes */
 
-static  void usage() {
+static  void printUsage() {
 	printf("Usage: calcfuturepcr -ix <pcr index> [-ic <message> | -if <filename>] [-v]\n"
 	       "-ix    : index of PCR to read\n"
 	       "-ic    : the message a PCR will be extended with (with it's hash!)\n"
@@ -81,7 +81,7 @@ static  void usage() {
 	       "calcfuturepcr -ix 1 -ic mmm\n");
 }
 
-int main(int argc, char * argv[]) {
+static int mymain(int argc, char * argv[]) {
 	int i = 0;
 	int ret = 0;
 	int index = -1;
@@ -102,7 +102,7 @@ int main(int argc, char * argv[]) {
 				index = atoi(argv[i]);
 			} else {
 				printf("Missing parameter for -ix.\n");
-				usage();
+				printUsage();
 				exit(-1);
 			}
 		} else
@@ -112,7 +112,7 @@ int main(int argc, char * argv[]) {
 				message = argv[i];
 			} else {
 				printf("Missing parameter for -ic.\n");
-				usage();
+				printUsage();
 				exit(-1);
 			}
 		} else
@@ -122,7 +122,7 @@ int main(int argc, char * argv[]) {
 				filename = argv[i];
 			} else {
 				printf("Missing parameter for -if.\n");
-				usage();
+				printUsage();
 				exit(-1);
 			}
 		} else
@@ -130,11 +130,11 @@ int main(int argc, char * argv[]) {
 			TPM_setlog(1);
 		} else
 		    if (!strcmp("-h",argv[i])) {
-			usage();
+			printUsage();
 			exit(-1);
 		} else {
 			printf("\n%s is not a valid option\n",argv[i]);
-			usage();
+			printUsage();
 			exit(-1);
 		}
 		i++;
@@ -143,7 +143,7 @@ int main(int argc, char * argv[]) {
 
 	if (-1 == index || (NULL == message && filename == NULL)) {
 		printf("Missing or wrong parameter.\n");
-		usage();
+		printUsage();
 		exit(-1);
 	}
 	
@@ -165,7 +165,7 @@ int main(int argc, char * argv[]) {
 		memcpy(extend+TPM_HASH_SIZE, msgdig, TPM_HASH_SIZE);
 		TSS_sha1(extend,sizeof(extend),digest);
 		i = 0;
-		printf("Future value of PCR %d: ",index);
+		//printf("Future value of PCR %d: ",index);
 		while (i < TPM_HASH_SIZE){
 			printf("%02x",digest[i]);
 			i++;
@@ -177,3 +177,6 @@ int main(int argc, char * argv[]) {
 	}
 	return ret;
 }
+
+#include "tpm_command.h"
+tpm_command_register("calcfuturepcr", mymain, printUsage)

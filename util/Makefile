@@ -30,10 +30,10 @@ PROGS += \
 	ownerreadinternalpub \
 	activateidentity \
 	identity \
+	calcfuturepcr \
 
 NOPROGS += \
 	pcrread \
-	calcfuturepcr \
 	certifykey \
 	certifyselftest \
 	chgauth \
