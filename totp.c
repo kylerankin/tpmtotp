@@ -16,8 +16,9 @@
 
 int main(int argc, char *argv[])
 {
-	(void) argc;
-	(void) argv;
+	int show_date = 1;
+	if (argc > 1 && strcmp(argv[1], "-q") == 0)
+		show_date = 0;
 
 	const size_t keylen = 20;
 	unsigned char key[keylen];
@@ -45,7 +46,10 @@ int main(int argc, char *argv[])
 	strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", localtime(&now));
 	uint32_t token = oauth_calc(now, key, keylen);
 
-	printf("%s: %06d\n", time_str, token);
+	if (show_date)
+		printf("%s: %06d\n", time_str, token);
+	else
+		printf("%06d\n", token);
 
 	return 0;
 }
