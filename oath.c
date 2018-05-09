@@ -216,3 +216,38 @@ oauth_calc(
 
 	return truncatedHash;
 }
+/** C function to do hotp computation */
+uint32_t
+hotp_calc(
+	uint32_t counter,
+	const uint8_t * secret,
+	size_t secret_len
+)
+{
+	uint8_t byteArray[] = {
+		0,
+		0,
+		0,
+		0,
+		counter >> 24,
+		counter >> 16,
+		counter >>  8,
+		counter >>  0,
+	};
+
+	sha1_initHmac(secret, secret_len);
+	sha1_writebytes(byteArray, 8);
+	const uint8_t * const hash = sha1_resultHmac();
+  
+	const unsigned offset = hash[20 - 1] & 0xF; 
+	uint32_t truncatedHash = 0;
+	for (int j = 0; j < 4; ++j) {
+		truncatedHash <<= 8;
+		truncatedHash  |= hash[offset + j];
+	}
+    
+	truncatedHash &= 0x7FFFFFFF;
+	truncatedHash %= 1000000;
+
+	return truncatedHash;
+}

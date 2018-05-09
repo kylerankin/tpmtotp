@@ -10,6 +10,12 @@ oauth_calc(
 	const uint8_t * secret,
 	size_t secret_len
 );
+extern uint32_t
+hotp_calc(
+	uint32_t counter,
+	const uint8_t * secret,
+	size_t secret_len
+);
 
 
 #endif

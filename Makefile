@@ -25,7 +25,7 @@ LDLIBS=-L../mbedtls-2.3.0/library/ -lmbedcrypto -ldl
 
 PLYMOUTH_LDLIBS = `pkg-config --libs ply-boot-client`
 
-APPS=qrenc totp base32
+APPS=qrenc totp hotp base32
 
 all: $(APPS) extra
 
@@ -37,6 +37,7 @@ libtpm/libtpm.a:
 
 unsealtotp: unsealtotp.o oath.o
 totp: totp.o oath.o
+hotp: hotp.o oath.o
 base32: base32-main.o base32.o
 
 plymouth-unsealtotp: plymouth-unsealtotp.c
